@@ -1,0 +1,559 @@
+<?php
+require("check_login.php");
+require("config.php");
+
+// Check for passed arguments
+if (isset($_GET['action'])) {
+    $action = $_GET['action'];
+} else {
+    $action = "";
+}
+
+if (isset($_GET['cmd'])) {
+    $cmd = $_GET['cmd'];
+} else {
+    $cmd = "";
+}
+
+if (isset($_REQUEST['staff'])) {
+    $staff = $_REQUEST['staff'];
+} else {
+    if ($_SESSION['SESSION_STAFF'] == "Y") {
+        $staff = $_SESSION['SESSION_USERID'];
+    } else {
+        $staff = 0;
+    }
+}
+
+if (isset($_REQUEST['status'])) {
+    $status = $_REQUEST['status'];
+} else {
+    $status = "Active";
+}
+
+if (isset($_REQUEST['todostatus'])) {
+    $todostatus = $_REQUEST['todostatus'];
+} else {
+    $todostatus = "Completed";
+}
+
+if (isset($_REQUEST['edit_priv'])) {
+    $edit_priv = $_REQUEST['edit_priv'];
+} else {
+    $edit_priv = "N";
+}
+
+if (isset($_REQUEST['content'])) {
+    $content = $_REQUEST['content'];
+} else {
+    $content = "";
+}
+
+if (isset($_REQUEST['order'])) {
+    $order = $_REQUEST['order'];
+} else {
+    $order = "";
+}
+
+if (isset($_REQUEST['page'])) {
+    $page = $_REQUEST['page'];
+} else {
+    $page = 1;
+}
+
+if (isset($_REQUEST['pageflag'])) {
+    $pageflag = $_REQUEST['pageflag'];
+} else {
+    $pageflag = 0;
+}
+
+if (isset($_REQUEST['dragonly'])) {
+    $dragonly = $_REQUEST['dragonly'];
+} else {
+    $dragonly = 0;
+}
+
+if ((isset($_REQUEST['project'])) && (is_numeric($_REQUEST['project']))) {
+    $project = $_REQUEST['project'];
+} else {
+    $project = 0;
+}
+
+if ((isset($_REQUEST['duty'])) && (is_numeric($_REQUEST['duty']))) {
+    $duty = $_REQUEST['duty'];
+} else {
+    $duty = 0;
+}
+
+if (isset($_REQUEST['maxresults'])) {
+    $maxresults = $_REQUEST['maxresults'];
+    if ($maxresults == 0) {
+        $maxresults = 20;
+    }
+} else {
+    $maxresults = 20;
+}
+
+if (isset($_REQUEST['newtext'])) {
+    $newtext = $_REQUEST['newtext'];
+} else {
+    $newtext = 0;
+}
+
+if (isset($_REQUEST['pdflag'])) {
+    $pdflag = $_REQUEST['pdflag'];
+} else {
+    $pdflag = "";
+}
+
+if (isset($_REQUEST['pdchange'])) {
+    $pdchange = $_REQUEST['pdchange'];
+} else {
+    $pdchange = 0;
+}
+
+if (isset($_REQUEST['staffchange'])) {
+    $staffchange = $_REQUEST['staffchange'];
+} else {
+    $staffchange = 0;
+}
+
+if (isset($_REQUEST['visibility'])) {
+    $visibility = $_REQUEST['visibility'];
+} else {
+    $visibility = "Public";
+}
+
+if (isset($_REQUEST['scheduledate'])) {
+    $scheduledate = $_REQUEST['scheduledate'];
+} else {
+    $scheduledate = "";
+}
+
+if (isset($_REQUEST['fromdate'])) {
+    $fromdate = $_REQUEST['fromdate'];
+} else {
+    // Default: one month ago
+    $prevmonth = mktime(0, 0, 0, date("m") - 1, date("d"), date("Y"));
+    $fromdate = date("Y", $prevmonth) . "-" . date("m", $prevmonth) . "-" .    
+        date("d", $prevmonth);
+}
+
+if (isset($_REQUEST['todate'])) {
+    $todate = $_REQUEST['todate'];
+} else {
+    // Default: today's date
+    $todate = date('Y') . "-" . date('m') . "-" . date('d');
+}
+
+// Declare PHP functions
+require("equilibrium.php");
+
+// Commands that don't generate HTML output
+switch($cmd) {
+    case "updatelist";
+        if ($order) {
+            $todo_order = explode(",", $order);
+            
+            if ($project) {
+                $order_var = "project_order";
+            } else if ($duty) {
+                $order_var = "duty_order";
+            } else {
+                $order_var = "order_number";
+            }
+            
+            // Re-order to-do items in response to drag and drop
+            $conn = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE);
+            $errorflag = 0;
+            $offset = ($page - 1) * $maxresults;
+            for ($i = 0; $i < count($todo_order); $i++) {
+                
+                $query = "update todos set $order_var = \"" . ($offset + $i + 1) . "\" " .
+                    "where todo_id = \"" . $todo_order[$i] . "\" ";
+                //printf("query = $query (page = $page)<br>\n");
+                $update = $conn->query($query);
+                if ($update != 1) {
+                    $errorflag = 1;
+                }
+            }
+            // Close the database connection
+            $conn->close();
+
+            $new_todolist = build_todolist($staff, $status, $todostatus, 
+                $project, $duty, $pageflag, $dragonly, $page, $maxresults);
+            printf($new_todolist);
+            exit;
+        } else {
+            printf("<p>Error updating to-do list: Order is not specified.</p>\n");
+            require("footer.php");
+            exit;
+        }
+
+        break;
+
+    // Delete to-do item
+    case "deleteitem";
+
+        $conn = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD) 
+            or die ("Cannot connect to database. " . mysql_error() . "\n<br>");
+        mysql_select_db(DB_DATABASE);
+        $content = trim(mysql_real_escape_string($content));
+        $result = mysql_query("DELETE FROM todos WHERE todo_id = '$content'");
+        mysql_close($conn);
+        $new_todolist = build_todolist($staff, $status, $todostatus, 
+            $project, $duty, $pageflag, $dragonly, $page, $maxresults);
+        printf($new_todolist);
+        break;
+
+    case "edititem";
+
+        $conn = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD) 
+            or die ("Cannot connect to database. " . mysql_error() . "\n<br>");
+        mysql_select_db(DB_DATABASE);
+        //$newtext = trim(mysql_real_escape_string($newtext));
+        if (($scheduledate) && ($scheduledate != "NULL") && ($scheduledate != "000-00-00")) {
+            $scheduleclause = "schedule_date = \"$scheduledate\", ";
+        } else {
+            $scheduleclause = "schedule_date = NULL, ";
+        }
+        if ($pdflag == "Project") {
+            $edit_item = mysql_query("UPDATE todos set description = \"" . $newtext . 
+                "\", project_id = \"$pdchange\", duty_id = \"0\", " .
+                "staff_assigned = \"$staffchange\", $scheduleclause " . 
+                "visibility = \"$visibility\" WHERE todo_id = '$content' ");
+        
+        } else if ($pdflag == "Duty") {
+            $edit_item = mysql_query("UPDATE todos set description = \"" . $newtext . 
+                "\", duty_id = \"$pdchange\", project_id = \"0\", " .
+                "staff_assigned = \"$staffchange\", $scheduleclause " . 
+                "visibility = \"$visibility\" WHERE todo_id = '$content' ");
+                
+        } else {
+            $edit_item = mysql_query("UPDATE todos set description = \"" . $newtext . 
+                "\", staff_assigned = \"$staffchange\", $scheduleclause " . 
+                "visibility = \"$visibility\" WHERE todo_id = '$content' ");
+        }
+        mysql_close($conn);
+
+        $new_todolist = build_todolist($staff, $status, $todostatus, 
+            $project, $duty, $pageflag, $dragonly, $page, $maxresults);
+        //$new_todolist .= "UPDATE todos set description = \"" . $newtext . 
+        //        "\", duty_id = \"$pdchange\", project_id = \"0\", " .
+        //        "staff_assigned = \"$staffchange\", " . 
+        //        "visibility = \"$visibility\" WHERE todo_id = '$content' ";
+        printf($new_todolist);
+        exit;
+
+        break;
+
+    case "additem";
+
+        // Add new item
+        $conn = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD) 
+            or die ("Cannot connect to database. " . mysql_error() . "\n<br>");
+        mysql_select_db(DB_DATABASE);
+        $newtext = trim(mysql_real_escape_string($content));
+        if ($newtext) {
+            if ($pdflag == "Project") {
+                
+                // Move existing to-do items up in order
+                $start_trans = mysql_query("start transaction ");
+                $get_order = mysql_query("SELECT todo_id from todos " .
+                    "where project_id = \"$pdchange\" " .
+                    "and completed = 'N' " .
+                    "order by project_order asc ");
+                $count = 2;
+                while ($row = mysql_fetch_array($get_order, MYSQL_ASSOC)) {
+                    $set_order = mysql_query("update todos set project_order = \"$count\" " .
+                        "where todo_id = \"" . $row['todo_id'] . "\" ");
+                    $count++;
+                }
+                mysql_free_result($get_order);
+                    
+                // Assign this to-do the same visibility as its project
+                $get_vis = mysql_query("SELECT visibility from projects " .
+                    "where project_id = \"$pdchange\" ");
+                if ($row = mysql_fetch_array($get_vis, MYSQL_ASSOC)) {
+                    $visibility = $row['visibility'];
+                } else {
+                    $visibility = 'Public';
+                }
+                mysql_free_result($get_vis);
+                
+                // Add new item at top of list
+                $add_item = mysql_query("INSERT into todos (description, " .
+                    "project_id, duty_id, staff_assigned, project_order, " .
+                    "visibility) " .
+                    "values (\"$newtext\", \"$pdchange\", \"0\", \"$staff\", " .
+                    "\"1\", \"$visibility\" ) ");
+                $stop_trans = mysql_query("commit ");
+                
+            } else if ($pdflag == "Duty") {
+                
+                // Move existing to-do items up in order
+                $start_trans = mysql_query("start transaction ");
+                $get_order = mysql_query("SELECT todo_id from todos " .
+                    "where duty_id = \"$pdchange\" " .
+                    "and completed = 'N' " .
+                    "order by duty_order asc ");
+                $count = 2;
+                while ($row = mysql_fetch_array($get_order, MYSQL_ASSOC)) {
+                    $set_order = mysql_query("update todos set duty_order = \"$count\" " .
+                        "where todo_id = \"" . $row['todo_id'] . "\" ");
+                    $count++;
+                }
+                mysql_free_result($get_order);
+                
+                // Assign this to-do the same visibility as its duty
+                $get_vis = mysql_query("SELECT visibility from duties " .
+                    "where duty_id = \"$pdchange\" ");
+                if ($row = mysql_fetch_array($get_vis, MYSQL_ASSOC)) {
+                    $visibility = $row['visibility'];
+                } else {
+                    $visibility = 'Public';
+                }
+                mysql_free_result($get_vis);
+                
+                // Add new item at top of list
+                $add_item = mysql_query("INSERT into todos (description, " .
+                    "project_id, duty_id, staff_assigned, duty_order, " .
+                    "visibility) " .
+                    "values (\"$newtext\", \"0\", \"$pdchange\", \"$staff\", " .
+                    "\"1\", \"$visibility\" ) ");
+                $stop_trans = mysql_query("commit ");
+            
+            } else {
+                
+                // Query conditions for To Do page
+                if ($status == "All") {
+                    $statusclause = "";
+                } else if ($status == "Open") {
+                    $statusclause = "and ((p.status in ('Pending', 'Active', 'Suspended') " .
+                        "or t.project_id = 0) " .
+                        "and (d.status = \"Active\"  or t.duty_id = 0)) ";
+                } else {
+                    $statusclause = "and ((p.status = \"$status\" " .
+                        "or t.project_id = 0) " .
+                        "and (d.status = \"Active\"  or t.duty_id = 0)) ";
+                }
+                
+                // Only let people add items as themselves, but can reassign later
+                $staffclause = "and t.staff_assigned = \"" . 
+                    $_SESSION['SESSION_USERID'] . "\" ";
+                
+                // Move existing to-do items up in order
+                $start_trans = mysql_query("start transaction ");
+                $get_order = mysql_query("SELECT t.todo_id from todos as t " .
+                    "left join projects as p on t.project_id = p.project_id " .
+                    "left join duties as d on t.duty_id = d.duty_id " .
+                    "where project_id = \"$pdchange\" " .
+                    "and completed = 'N' " .
+                    $statusclause . $staffclause .
+                    "order by order_number asc ");
+                $count = 2;
+                while ($row = mysql_fetch_array($get_order, MYSQL_ASSOC)) {
+                    $set_order = mysql_query("update todos set order_number = \"$count\" " .
+                        "where todo_id = \"" . $row['todo_id'] . "\" ");
+                    $count++;
+                }
+                mysql_free_result($get_order);
+                
+                // Add new item at top of list
+                $add_item = mysql_query("INSERT into todos (description, project_id, " .
+                    "duty_id, staff_assigned, order_number) values (\"" . $newtext . "\", \"0\", " .
+                    "\"0\", \"$staff\", \"1\" ) ");
+                $stop_trans = mysql_query("commit ");
+            
+            }
+        }
+        mysql_close($conn);
+
+        $new_todolist = build_todolist($staff, $status, $todostatus, 
+            $project, $duty, $pageflag, $dragonly, $page, $maxresults);
+        printf($new_todolist);
+        exit;
+
+        break;
+
+    case "togglecomplete";
+
+        $conn = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD) 
+            or die ("Cannot connect to database. " . mysql_error() . "\n<br>");
+        mysql_select_db(DB_DATABASE);
+        $content = trim(mysql_real_escape_string($content));
+        
+        // Check whether task is already marked completed
+        $result = mysql_query('SELECT completed FROM todos ' .
+            'where todo_id = "' . $content . '"');
+        $row = mysql_fetch_array($result, MYSQL_ASSOC);
+        if ($row['completed'] == "Y") {
+        
+            // mark task NOT completed
+            $result = mysql_query('UPDATE todos set completed = "N", ' .
+                'completed_date = NULL, completed_time = NULL ' .
+                'WHERE todo_id="' . $content . '"');
+
+        } else {
+        
+            // mark task completed
+            $result = mysql_query('UPDATE todos set completed = "Y", ' .
+                'completed_date = CURDATE(), completed_time = NOW() ' .
+                'WHERE todo_id="' . $content . '"');
+        }          
+        mysql_close($conn);
+        
+        $new_todolist = build_todolist($staff, $status, $todostatus, 
+            $project, $duty, $pageflag, $dragonly, $page, $maxresults);
+        printf($new_todolist);
+        break;
+
+    case "togglecomplete_twolists";
+
+        $conn = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD) 
+            or die ("Cannot connect to database. " . mysql_error() . "\n<br>");
+        mysql_select_db(DB_DATABASE);
+        $content = trim(mysql_real_escape_string($content));
+        
+        // Check whether task is already marked completed
+        $result = mysql_query('SELECT completed FROM todos ' .
+            'where todo_id = "' . $content . '"');
+        $row = mysql_fetch_array($result, MYSQL_ASSOC);
+        if ($row['completed'] == "Y") {
+        
+            // mark task NOT completed
+            $result = mysql_query('UPDATE todos set completed = "N", ' .
+                'completed_date = NULL WHERE todo_id="' . $content . '"');
+
+        } else {
+        
+            // mark task completed
+            $result = mysql_query('UPDATE todos set completed = "Y", ' .
+                'completed_date = CURDATE() WHERE todo_id="' . $content . '"');
+        }          
+        mysql_close($conn);
+        
+        $new_twolists = build_two_lists($staff, $status, 
+            $project, $duty, $pageflag, $dragonly, $page, $maxresults);
+        printf($new_twolists);
+        break;
+
+    // Delete comment
+    case "deletecomment";
+
+        $conn = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD) 
+            or die ("Cannot connect to database. " . mysql_error() . "\n<br>");
+        mysql_select_db(DB_DATABASE);
+        $content = trim(mysql_real_escape_string($content));
+        $result = mysql_query("DELETE FROM comments WHERE comment_id = '$content' ");
+        mysql_close($conn);
+        $new_commentlist = build_commentlist($staff, $project, $duty, 
+            $fromdate, $todate, $pageflag, $page, $maxresults);
+        printf($new_commentlist);
+        break;
+
+    // Edit comment
+    case "editcomment";
+
+        $conn = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD) 
+            or die ("Cannot connect to database. " . mysql_error() . "\n<br>");
+        mysql_select_db(DB_DATABASE);
+        $newtext = trim(mysql_real_escape_string($newtext));
+        if ($pdflag == "Project") {
+            $edit_comment = mysql_query("UPDATE comments set comment_text = \"" . $newtext . 
+                "\", project_id = \"$pdchange\", duty_id = \"0\", " .
+                "submitter_id = \"" . $_SESSION['SESSION_USERID'] . "\", " . 
+                "visibility = \"$visibility\" WHERE comment_id = '$content' ");
+        
+        } else if ($pdflag == "Duty") {
+            $edit_comment = mysql_query("UPDATE comments set comment_text = \"" . $newtext . 
+                "\", duty_id = \"$pdchange\", project_id = \"0\", " .
+                "submitter_id = \"" . $_SESSION['SESSION_USERID'] . "\", " . 
+                "visibility = \"$visibility\" WHERE comment_id = '$content' ");
+                
+        } else {
+            $edit_comment = mysql_query("UPDATE comments set comment_text = \"" . $newtext . 
+                "\", submitter_id = \"" . $_SESSION['SESSION_USERID'] . "\", " . 
+                "visibility = \"$visibility\" WHERE comment_id = '$content' ");
+        }
+        mysql_close($conn);
+
+        $new_commentlist = build_commentlist($staff, $project, $duty, 
+            $fromdate, $todate, $pageflag, $page, $maxresults);
+        printf($new_commentlist);
+        exit;
+
+        break;
+
+    // Add comment
+    case "addcomment";
+
+        // Add new comment
+        $conn = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD) 
+            or die ("Cannot connect to database. " . mysql_error() . "\n<br>");
+        mysql_select_db(DB_DATABASE);
+        $newtext = trim(mysql_real_escape_string($content));
+        if ($newtext) {
+            if ($pdflag == "Project") {
+                
+                // Assign this comment the same visibility as its project
+                $get_vis = mysql_query("SELECT visibility from projects " .
+                    "where project_id = \"$pdchange\" ");
+                if ($row = mysql_fetch_array($get_vis, MYSQL_ASSOC)) {
+                    $visibility = $row['visibility'];
+                } else {
+                    $visibility = 'Public';
+                }
+                mysql_free_result($get_vis);
+                
+                // Add new comment
+                $add_comment = mysql_query("INSERT into comments (comment_text, " .
+                    "project_id, duty_id, submitter_id, submit_date, submit_time, " .
+                    "visibility) " .
+                    "values (\"$newtext\", \"$pdchange\", \"0\", \"" . 
+                    $_SESSION['SESSION_USERID'] . "\", curdate(), now(), " .
+                    "\"$visibility\" ) ");
+                
+            } else if ($pdflag == "Duty") {
+                
+                // Assign this comment the same visibility as its duty
+                $get_vis = mysql_query("SELECT visibility from duties " .
+                    "where duty_id = \"$pdchange\" ");
+                if ($row = mysql_fetch_array($get_vis, MYSQL_ASSOC)) {
+                    $visibility = $row['visibility'];
+                } else {
+                    $visibility = 'Public';
+                }
+                mysql_free_result($get_vis);
+                
+                // Add new comment
+                $add_comment = mysql_query("INSERT into comments (comment_text, " .
+                    "project_id, duty_id, submitter_id, submit_date, submit_time, " .
+                    "visibility) " .
+                    "values (\"$newtext\", \"0\", \"$pdchange\", \"" . 
+                    $_SESSION['SESSION_USERID'] . "\", curdate(), now(), " .
+                    "\"$visibility\" ) ");
+            
+            } else {
+                
+                // Add new comment
+                $add_comment = mysql_query("INSERT into comments (comment_text, " .
+                    "project_id, duty_id, submitter_id, submit_date, submit_time) " .
+                    "values (\"$newtext\", \"0\", \"$pdchange\", \"" . 
+                    $_SESSION['SESSION_USERID'] . "\", curdate(), now() ) ");
+                // Add new item at top of list
+            
+            }
+        }
+        mysql_close($conn);
+
+        $new_commentlist = build_commentlist($staff, $project, $duty, 
+            $fromdate, $todate, $pageflag, $page, $maxresults);
+        printf($new_commentlist);
+        exit;
+        break;
+
+}
+
+?>
+

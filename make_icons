@@ -1,0 +1,304 @@
+#!/usr/bin/perl -w
+# Make icons for Equilibrium
+# Usage: make_icons
+# John Obenauer, 2/15/2007
+
+our @colors = (
+    [1, 0, 0],          # red
+    [0, 1, 0],          # green
+    [0, 0, 1],          # blue
+    [1, 1, 0],          # yellow
+    [0, 1, 1],          # cyan
+    [1, 0, 1],          # magenta
+    [0.8, 0.6, 0.6],    # light brown
+    [0.4, 0.2, 0.0],    # brown
+    [0.6, 0.4, 0.2],    # light brown
+    [0.8, 0.4, 0.2],    # orange brown
+    [0.6, 0.0, 0.2],    # dark red
+    [1.0, 0.4, 0.0],    # orange
+    [1.0, 0.6, 0.0],    # light orange
+    [1.0, 0.8, 0.0],    # yellow
+    [1.0, 1.0, 0.8],    # light yellow
+    [0.8, 0.8, 0.0],    # yellow green
+    [0.6, 0.6, 0.0],    # light green
+    [1.0, 0.8, 0.6],    # light orange
+    [0.6, 1.0, 0.4],    # light green
+    [0.4, 0.8, 0.6],    # blue green
+    [0.8, 0.8, 0.6],    # light yellow green
+    [0.0, 1.0, 0.8],    # blue green
+    [0.6, 1.0, 0.8],    # light blue green
+    [0.8, 1.0, 1.0],    # light cyan
+    [0.0, 0.6, 0.6],    # blue green
+    [1.0, 0.8, 1.0],    # light pink
+    [1.0, 0.6, 1.0],    # magenta
+    [0.8, 0.0, 1.0],    # purple
+    [0.6, 0.0, 1.0],    # purple
+    [0.6, 0.6, 1.0],    # blue
+    [0.8, 0.8, 0.8],    # light gray
+    [0.4, 0.4, 0.4]     # dark gray
+);
+our $ncolors = $#colors + 1;
+
+our @shapes = (
+
+    # Sphere
+    "sphere {\n    <0, 0, 0>, 4\n    scale 5.5\n",
+
+    # Cone
+    "cone {\n    <0, -2.5, 0>, 4, <0, 4.3, 0>, 0\n    scale 5.3 rotate <-10, 0, 0> translate <0, -1, 0>\n",
+
+    # Cylinder
+    "cylinder {\n    <0, -3, 0>, <0, 3, 0>, 3\n    scale 5.8 rotate <-20, 0, 0> translate <0, 2, 0>\n",
+
+    # Torus
+    "torus {\n    3, 1.5\n    scale 5 rotate <90, 0, 0>\n",
+
+    # Tetrahedron
+    "object {Tetrahedron\n    scale 20 rotate <0, -45, 0> rotate <-30, 0, 0> translate <0, -6, 0>\n",
+
+    # Cube
+    "box {\n    <-2.5, -2.5, -2.5>, <2.5, 2.5, 2.5>\n    scale 5 rotate <0, 45, 0>\n" .
+        "    rotate <40, 0, 0>\n    translate <0, 1, 0>\n",
+
+    # Octahedron
+    "object {Octahedron\n    scale 45 rotate <0, 45, 0> rotate <-10, 0, 0>\n",
+
+    # Dodecahedron
+    "object {Dodecahedron scale 23\n    rotate <42, 0, 0> translate <0, 2, 0>\n",
+
+    # Icosahedron
+    "object {Icosahedron scale 37\n    rotate <0, 0, 32>\n"
+
+);
+our $nshapes = $#shapes + 1;
+
+our @pigmentrotation = (
+
+    # Sphere
+    "    rotate <0, 0, 0>\n",
+
+    # Cone
+    "    rotate <-10, 0, 0>\n",
+
+    # Cylinder
+    "    rotate <-20, 0, 0>\n",
+
+    # Torus
+    "    rotate <90, 0, 0>\n",
+
+    # Tetrahedron
+    "    rotate <0, -45, 0> rotate <-30, 0, 0>\n",
+
+    # Cube
+    "    rotate <0, 45, 0>\n    rotate <40, 0, 0>\n",
+
+    # Octahedron
+    "    rotate <0, 45, 0> rotate <-10, 0, 0>\n",
+
+    # Dodecahedron
+    "    rotate <42, 0, 0>\n",
+
+    # Icosahedron
+    "    rotate <0, 0, 32>\n"
+
+);
+
+our @patterns = (
+    "    pigment {radial frequency 4 scale 1\n", # radial
+    "    pigment {spiral1 3 scale 30\n", # spiral
+    "    pigment {wood scale 20\n    \n", # wood
+    "    pigment {gradient <1, 1, 1> scale 12\n" # gradient
+);
+our $npatterns = $#patterns + 1;
+
+our @rotatecode = (
+    1, # radial
+    0, # spiral
+    0, # wood
+    1  # gradient
+);
+
+# Camera position
+our $cameracode = "// Camera position\n" .
+    "camera {\n" .
+    "    location <0, 0, -100>\n" .
+    "    look_at <0, 0, 0>\n    angle 35\n" .
+    "}\n";
+
+# Light source
+our $lightcode = "//Light source\n" .
+    "light_source {\n" .
+    "<0, 0, -150>\n" .
+    "color rgb <2, 2, 2>\n" .
+    "area_light <5, 0, 0>, <0, 0, 5>, 5, 5\n" .
+    "adaptive 1\n" .
+    "jitter\n" .
+   "}\n";
+
+our $brightlightcode = "//Light source\n" .
+    "light_source {\n" .
+    "<0, 0, -150>\n" .
+    "color rgb <5, 5, 5>\n" .
+    "area_light <5, 0, 0>, <0, 0, 5>, 5, 5\n" .
+    "adaptive 1\n" .
+    "jitter\n" .
+   "}\n";
+
+# Define tetrahedron
+our $tetrahedron = "#declare Tetrahedron = union {\n" .
+    "    triangle { < 1,  1,  1>,  <-1,  1, -1>,  < 1, -1, -1> }\n" .
+    "    triangle { <-1,  1, -1>,  <-1, -1,  1>,  < 1, -1, -1> }\n" .
+    "    triangle { < 1,  1,  1>,  < 1, -1, -1>,  <-1, -1,  1> }\n" .
+    "    triangle { < 1,  1,  1>,  <-1, -1,  1>,  <-1,  1, -1> }\n" .
+    "}\n";
+
+# Define octahedron
+our $octahedron = "#declare a8 = 1 / (2 * sqrt(2));\n" .
+"#declare b8 = 1/2;\n" .
+"#declare Octahedron = union {\n" .
+"    triangle {  <-a8,  0,  a8>,   <-a8,  0, -a8>,   < 0,  b8,  0> }\n" .
+"    triangle {  <-a8,  0, -a8>,   < a8,  0, -a8>,   < 0,  b8,  0> }\n" .
+"    triangle {  < a8,  0, -a8>,   < a8,  0,  a8>,   < 0,  b8,  0> }\n" .
+"    triangle {  < a8,  0,  a8>,   <-a8,  0,  a8>,   < 0,  b8,  0> }\n" .
+"    triangle {  < a8,  0, -a8>,   <-a8,  0, -a8>,   < 0, -b8,  0> }\n" .
+"    triangle {  <-a8,  0, -a8>,   <-a8,  0,  a8>,   < 0, -b8,  0> }\n" .
+"    triangle {  < a8,  0,  a8>,   < a8,  0, -a8>,   < 0, -b8,  0> }\n" .
+"    triangle {  <-a8,  0,  a8>,   < a8,  0,  a8>,   < 0, -b8,  0> }\n" .
+"}\n";
+
+# Define dodecahedron
+our $dodecahedron = "#declare phi12 = (1 + sqrt(5)) / 2;\n" .
+"#declare b12 = 1 / phi12;\n" .
+"#declare c12 = 1 / (phi12 * phi12);\n" .
+"#declare Dodecahedron = union {\n" .
+"polygon {5, < c12,  0,  1>,  <-c12,  0,  1>,  <-b12,  b12,  b12>,  " .
+"< 0,  1,  c12>,  < b12,  b12,  b12> }\n" .
+"polygon {5, <-c12,  0,  1>,  < c12,  0,  1>,  < b12, -b12,  b12>,  " .
+"< 0, -1,  c12>,  <-b12, -b12,  b12> }\n" .
+"polygon {5, < c12,  0, -1>,  <-c12,  0, -1>,  <-b12, -b12, -b12>,  " .
+"< 0, -1, -c12>,  < b12, -b12, -b12> }\n" .
+"polygon {5 <-c12,  0, -1>,  < c12,  0, -1>,  < b12,  b12, -b12>,  " .
+"< 0,  1, -c12>,  <-b12,  b12, -b12> }\n" .
+"polygon {5, < 0,  1, -c12>,  < 0,  1,  c12>,  < b12,  b12,  b12>,  " .
+"< 1,  c12,  0>,  < b12,  b12, -b12> }\n" .
+"polygon {5, < 0,  1,  c12>,  < 0,  1, -c12>,  <-b12,  b12, -b12>,  " .
+"<-1,  c12,  0>,  <-b12,  b12,  b12> } \n" .
+"polygon {5, < 0, -1, -c12>,  < 0, -1,  c12>,  <-b12, -b12,  b12>,  " .
+"<-1, -c12,  0>,  <-b12, -b12, -b12> }\n" .
+"polygon {5, < 0, -1,  c12>,  < 0, -1, -c12>,  < b12, -b12, -b12>,  " .
+"< 1, -c12,  0>,  < b12, -b12,  b12> }\n" .
+"polygon {5, < 1,  c12,  0>,  < 1, -c12,  0>,  < b12, -b12,  b12>,  " .
+"< c12,  0,  1>,  < b12,  b12,  b12> }\n" .
+"polygon {5, < 1, -c12,  0>,  < 1,  c12,  0>,  < b12,  b12, -b12>,  " .
+"< c12,  0, -1>,  < b12, -b12, -b12> }\n" .
+"polygon {5, <-1,  c12,  0>,  <-1, -c12,  0>,  <-b12, -b12, -b12>,  " .
+"<-c12,  0, -1>,  <-b12,  b12, -b12> }\n" .
+"polygon {5, <-1, -c12,  0>,  <-1,  c12,  0>,  <-b12,  b12,  b12>,  " .
+"<-c12,  0,  1>,  <-b12, -b12,  b12> }\n" .
+"}\n";
+
+# Define icosahedron
+our $icosahedron = "#declare phi20 = (1 + sqrt(5)) / 2;\n" .
+"#declare a20 = 1 / 2;\n" .
+"#declare b20 = 1 / (2 * phi20);\n" .
+"#declare Icosahedron = union {\n" .
+"    triangle {  < 0,  b20, -a20>,   < b20,  a20,  0>,  < -b20,  a20,  0> }\n" .
+"    triangle {  < 0,  b20,  a20>,   <-b20,  a20,  0>,  <  b20,  a20,  0> }\n" .
+"    triangle {  < 0,  b20,  a20>,   < 0, -b20,  a20>,  < -a20,  0,  b20> }\n" .
+"    triangle {  < 0,  b20,  a20>,   < a20,  0,  b20>,  <  0, -b20,  a20> }\n" .
+"    triangle {  < 0,  b20, -a20>,   < 0, -b20, -a20>,  <  a20,  0, -b20> }\n" .
+"    triangle {  < 0,  b20, -a20>,   <-a20,  0, -b20>,  <  0, -b20, -a20> }\n" .
+"    triangle {  < 0, -b20,  a20>,   < b20, -a20,  0>,  < -b20, -a20,  0> }\n" .
+"    triangle {  < 0, -b20, -a20>,   <-b20, -a20,  0>,  <  b20, -a20,  0> }\n" .
+"    triangle {  <-b20,  a20,  0>,   <-a20,  0,  b20>,  < -a20,  0, -b20> }\n" .
+"    triangle {  <-b20, -a20,  0>,   <-a20,  0, -b20>,  < -a20,  0,  b20> }\n" .
+"    triangle {  < b20,  a20,  0>,   < a20,  0, -b20>,  <  a20,  0,  b20> }\n" .
+"    triangle {  < b20, -a20,  0>,   < a20,  0,  b20>,  <  a20,  0, -b20> }\n" .
+"    triangle {  < 0,  b20,  a20>,   <-a20,  0,  b20>,  < -b20,  a20,  0> }\n" .
+"    triangle {  < 0,  b20,  a20>,   < b20,  a20,  0>,  <  a20,  0,  b20> }\n" .
+"    triangle {  < 0,  b20, -a20>,   <-b20,  a20,  0>,  < -a20,  0, -b20> }\n" .
+"    triangle {  < 0,  b20, -a20>,   < a20,  0, -b20>,  <  b20,  a20,  0> }\n" .
+"    triangle {  < 0, -b20, -a20>,   <-a20,  0, -b20>,  < -b20, -a20,  0> }\n" .
+"    triangle {  < 0, -b20, -a20>,   < b20, -a20,  0>,  <  a20,  0, -b20> }\n" .
+"    triangle {  < 0, -b20,  a20>,   <-b20, -a20,  0>,  < -a20,  0,  b20> }\n" .
+"    triangle {  < 0, -b20,  a20>,   < a20,  0,  b20>,  <  b20, -a20,  0> }\n" .
+"}\n";
+
+# Color map
+our $colormap = "        color_map {\n" .
+        "            [0.0 FIRSTCOLOR]\n" .
+        "            [0.45 FIRSTCOLOR]\n" .
+        "            [0.5 SECONDCOLOR]\n" .
+        "            [0.95 SECONDCOLOR]\n" .
+        "        }\n";
+
+$icon_num = 0;
+for ($k = 0; $k < $npatterns; $k++) {
+    for ($i = 0; $i < $ncolors; $i++) {
+        for ($j = 0; $j < $ncolors; $j++) {
+            for ($m = 0; $m < $nshapes; $m++) {
+
+                # Skip using the same color twice (i=j)
+                if ($i == $j) {
+                    next;
+                }
+
+                # Increment icon number
+                $icon_num++;
+
+                # Start POV-Ray input file
+                open(POV, ">shape_" . $icon_num . ".pov");
+                print POV "$cameracode\n";
+                if ($m == 4) {
+                    print POV "$brightlightcode\n";
+                } else {
+                    print POV "$lightcode\n";
+                }
+                print POV "$tetrahedron\n";
+                print POV "$octahedron\n";
+                print POV "$dodecahedron\n";
+                print POV "$icosahedron\n";
+                print POV "$shapes[$m]\n";
+                print POV "$patterns[$k]\n";
+                if ($rotatecode[$k]) {
+                    print POV "$pigmentrotation[$m]\n";
+                }
+    
+                # Substitute selected colors inside color map
+                $thiscolormap = $colormap;
+                $firstcolor = "color rgb <" .
+                    $colors[$i][0] . ", " .
+                    $colors[$i][1] . ", " .
+                    $colors[$i][2] . ">";
+                $secondcolor = "color rgb <" .
+                    $colors[$j][0] . ", " .
+                    $colors[$j][1] . ", " .
+                    $colors[$j][2] . ">";
+                $thiscolormap =~ s/FIRSTCOLOR/$firstcolor/g;
+                $thiscolormap =~ s/SECONDCOLOR/$secondcolor/g;
+    
+                # Finish POV-Ray input file
+                print POV "$thiscolormap\n";
+
+                print POV "    }\n}\n\n";
+                close(POV);
+
+                # Generate ray-traced image
+                system("povray +Ishape_" . $icon_num . ".pov +W640 +H480 +A +ua -D -V");
+
+                # Scale image
+                system("convert -resize 32x24 shape_" . $icon_num . ".png icon_" . 
+                    $icon_num . ".png");
+            
+                # Delete intermediate files
+                system("rm -f shape_" . $icon_num . ".pov shape_" . $icon_num . ".png");
+
+            }
+        }
+    }
+}
+
+print "Finished: $icon_num icons created.\n";
+
+
+

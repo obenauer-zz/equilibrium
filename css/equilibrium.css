@@ -1,0 +1,84 @@
+h2 {
+    margin-bottom: 5px;
+}
+
+textarea.description {
+    font-family: Arial, Verdana, Helvetica, sans-serif;
+    font-size: 14px;
+}
+div.todo_item {
+    font-size: 14px;
+    margin-left: 0px;
+    padding: 0px;
+    cursor: pointer;
+}
+table.project {
+    font-size: 14px;
+    margin-left: 0px;
+    padding: 0px;
+}
+table.duty {
+    font-size: 14px;
+    margin-left: 0px;
+    padding: 0px;
+}
+#ptypedesc {
+    font-family: Arial, Verdana, Helvetica, sans-serif;
+    font-size: 12px;
+    padding-bottom: 7px;
+    line-height: 120%;
+    height: 5em;   
+}
+
+#dtypedesc {
+    font-family: Arial, Verdana, Helvetica, sans-serif;
+    font-size: 12px;
+    padding-bottom: 7px;
+    line-height: 120%;
+    height: 5em;   
+}
+
+div.sortableList 
+{
+  list-style-type: none;
+  padding: 0px;
+  margin: 0px;
+  width: 80%;
+}
+div.sortableList div
+{
+  /* cursor: move; */
+  padding: 2px 2px;
+  margin: 2px 0px;
+  background-color: white;
+  cursor: pointer;
+}
+td.values {
+    padding-left: 1em;
+    padding-right: 1em;
+    background-color: white;
+    text-align: center;
+}
+div.confirm {
+  display: none;
+} 
+div.editbox {
+  display: none;
+}
+
+div.addbox {
+  display: none;
+} 
+
+.smalltext {
+    font-family: Arial, Verdana, Helvetica, sans-serif;
+    font-size: 12px;
+    padding-bottom: 7px;
+    line-height: 120%;
+}
+
+form {
+    margin-bottom: 0px;
+}
+
+
