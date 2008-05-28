@@ -1,0 +1,2 @@
+Equilibrium uses PHP5, MySQL5, and Apache2.  It is developed for Linux but may work on Macs and Windows with Apache, MySQL, and PHP installed.  An easy way to install all of these on the other platforms is to use XAMPP.
+
