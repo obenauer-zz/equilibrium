@@ -2,3 +2,4 @@ Equilibrium uses PHP5, MySQL5, and Apache2.  It is developed for Linux but may w
 
 Equilibrium was designed for small groups of people working together, up to about 20 (limited by drop-down boxes of staff names getting inconveniently long).  It may be worth extending Equilibrium to allow multiple teams to use a single copy.
 
+UPDATE (5/29/08) - It definitely will run great on Mac OS X Leopard's natively installed PHP/Apache.
