@@ -14,7 +14,7 @@ $upload_dir = "datafiles";
 $number_icons = 35712;
 
 # LDAP connection
-$use_ldap = "Y";
+$use_ldap = "N";
 define("LDAP_SERVER_ADDRESS","");
 define("LDAP_PORT","389");
 define("LDAP_BASE_DN","");

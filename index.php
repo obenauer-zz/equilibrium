@@ -365,12 +365,6 @@ switch($action) {
         printf("<html><head><title>%s Projects Database</title></head>\n", 
             $organization_name);
         printf("<body bgcolor='%s'>\n", $background_color);
-        printf("<table cellpadding=10><tr>\n");
-        printf("<td><a href='http://www.hartwellcenter.org'>");
-        printf("<img src='images/hclogo.png' border='0'></a></td>\n");
-        printf("<td><a href='http://www.stjude.org'>");
-        printf("<img src='images/stjudelogo.png' border='0'></a></td>\n");
-        printf("<tr></table>\n");
         printf("<h2>%s Projects Database</h2>\n", $organization_name);
         printf("<table><tr><td>\n");
         printf("  <table cellspacing='5' cellpadding='5'>\n");

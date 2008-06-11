@@ -1187,7 +1187,8 @@ function display_controls($fields, $values) {
             
             // Staff Member
             $staff = $values[$i];
-            printf("<td>Staff Member: \n");
+            //printf("<td>Staff Member: \n");
+            printf("<td>Staff: \n");
             printf("<select name='staff' size='1' onChange='viewform.submit()'>\n");
             
             // Retrieve and display list of staff members
@@ -1222,7 +1223,8 @@ function display_controls($fields, $values) {
 
             // Project status
             $status = $values[$i];
-            printf("<td>Project Status: \n");
+            //printf("<td>Project Status: \n");
+            printf("<td>Projects: \n");
             printf("<select name='status' size='1' onChange='viewform.submit()'>\n");
             
             // Default status is Active
@@ -1280,7 +1282,8 @@ function display_controls($fields, $values) {
 
             // Duty Status
             $dutystatus = $values[$i];
-            printf("<td>Duty Status: \n");
+            //printf("<td>Duty Status: \n");
+            printf("<td>Duties: \n");
             printf("<select name='dutystatus' size='1' onChange='viewform.submit()'>\n");
             
             // Default status is Active
@@ -1312,6 +1315,7 @@ function display_controls($fields, $values) {
 
             // ToDo Status
             $todostatus = $values[$i];
+            //printf("<td>To Do Status: \n");
             printf("<td>To Do Status: \n");
             printf("<select name='todostatus' size='1' onChange='viewform.submit()'>\n");
             
@@ -1330,6 +1334,34 @@ function display_controls($fields, $values) {
                 printf("<option value='Completed' selected>Completed\n");
             } else {
                 printf("<option value='Completed'>Completed\n");
+            }
+            
+            printf("</select></td>\n");
+
+            continue;
+        }
+        if ($fields[$i] == "Priority") {
+
+            // ToDo Status
+            $priority = $values[$i];
+            printf("<td>Priority: \n");
+            printf("<select name='priority' size='1' onChange='viewform.submit()'>\n");
+            
+            // Default priority is High
+            if ($priority == "") {
+                $priority = "High";
+            }
+    
+            // Show list of status values
+            if ($priority == "High") {
+                printf("<option value='High' selected>High\n");
+            } else {
+                printf("<option value='High'>High\n");
+            }
+            if ($priority == "Low") {
+                printf("<option value='Low' selected>Low\n");
+            } else {
+                printf("<option value='Low'>Low\n");
             }
             
             printf("</select></td>\n");

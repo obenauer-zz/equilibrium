@@ -27,6 +27,12 @@ if (isset($_REQUEST['todostatus'])) {
     $todostatus = "Pending";
 }
 
+if (isset($_REQUEST['priority'])) {
+    $priority = $_REQUEST['priority'];
+} else {
+    $priority = "High";
+}
+
 if (isset($_REQUEST['content'])) {
     $content = $_REQUEST['content'];
 } else {
@@ -197,8 +203,8 @@ switch($action) {
         }
 
         // Show main controls
-        $fields = array('Staff', 'Pstatus', 'Tstatus', 'Results');
-        $values = array($staff, $status, $todostatus, $maxresults);
+        $fields = array('Staff', 'Pstatus', 'Tstatus', 'Priority', 'Results');
+        $values = array($staff, $status, $todostatus, $priority, $maxresults);
         printf("<form action='todolist.php' method='get' name='viewform'>\n");
         $displayed_user = display_controls($fields, $values);
         printf("</form>\n");
