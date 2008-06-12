@@ -184,6 +184,12 @@ if (isset($_REQUEST['todostatus'])) {
     $todostatus = "Pending";
 }
 
+if (isset($_REQUEST['priority'])) {
+    $priority = $_REQUEST['priority'];
+} else {
+    $priority = "High";
+}
+
 // Declare PHP functions
 require("equilibrium.php");
 
@@ -1320,9 +1326,13 @@ switch($action) {
         printf("<h2>To Do Items</h2>\n");
         if ($edit_priv == "Y") {
             printf("<div>\n<input type='text' id='txtNewItem' name='txtNewItem' " .
-                "size='80%%' maxlength='255' onkeydown='handleItemKey(event, \"$staff\", \"$status\", \"$todostatus\", \"$project\", \"0\", \"0\", \"0\", \"$page\", \"$maxresults\");'>\n");
+                "size='80%%' maxlength='255' onkeydown='handleItemKey(event, " .
+                "\"$staff\", \"$status\", \"$todostatus\", \"$priority\", " .
+                "\"$project\", \"0\", \"0\", \"0\", \"$page\", \"$maxresults\");'>\n");
             printf("<input type='button' name='submit' value='Add item' " .
-                "onclick='modify_todo(\"txtNewItem\", \"additem\", \"$staff\", \"$status\", \"$todostatus\", \"$project\", \"0\", \"0\", \"0\", \"$page\", \"$maxresults\");'>\n</div><br>\n");
+                "onclick='modify_todo(\"txtNewItem\", \"additem\", \"$staff\", " .
+                "\"$status\", \"$todostatus\", \"$priority\", \"$project\", " .
+                "\"0\", \"0\", \"0\", \"$page\", \"$maxresults\");'>\n</div><br>\n");
         }
         printf("<div id='todo_section'>\n");
         //printf("%s", build_todolist($staff, $status, "Pending", $project, '0', '0', '0', $page, $maxresults));

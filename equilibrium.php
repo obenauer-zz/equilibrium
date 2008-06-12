@@ -1,6 +1,6 @@
 <?php
 
-function build_todolist($staff, $status, $todostatus, $project, 
+function build_todolist($staff, $status, $todostatus, $priority, $project, 
     $duty, $pageflag, $dragonly, $page, $maxresults) {
 
     global $displayed_user;
@@ -23,6 +23,12 @@ function build_todolist($staff, $status, $todostatus, $project,
         $staffclause = "and t.staff_assigned = \"$staff\" ";
     }
 
+    if ($priority == "All") {
+        $priorityclause = "";
+    } else {
+        $priorityclause = "and t.priority = \"$priority\" ";
+    }
+
     if (($project == 0) && ($duty == 0)) {
     
         // Query conditions for To Do page
@@ -39,7 +45,8 @@ function build_todolist($staff, $status, $todostatus, $project,
         }
         
         if ($todostatus == "Pending") {
-            $orderclause = "order by u.last_name, u.first_name, t.order_number asc ";
+            $orderclause = "order by u.last_name, u.first_name, " .
+                "t.order_number asc ";
         } else {
             $orderclause = "order by u.last_name, u.first_name, t.completed_date desc, " .
                 "t.completed_time desc ";
@@ -53,9 +60,9 @@ function build_todolist($staff, $status, $todostatus, $project,
         //$staffclause = "";        
     
         if ($todostatus == "Pending") {
-            $orderclause = "order by t.duty_order asc ";
+            $orderclause = "order by t.priority, t.duty_order asc ";
         } else {
-            $orderclause = "order by t.completed_time desc ";
+            $orderclause = "order by t.completed_date desc, t.completed_time desc ";
         }
     } else {
     
@@ -65,9 +72,9 @@ function build_todolist($staff, $status, $todostatus, $project,
         //$staffclause = "";        
                 
         if ($todostatus == "Pending") {
-            $orderclause = "order by t.project_order asc ";
+            $orderclause = "order by t.priority, t.project_order asc ";
         } else {
-            $orderclause = "order by t.completed_time desc ";
+            $orderclause = "order by t.completed_date desc, t.completed_time desc ";
         }
     }
     
@@ -194,7 +201,7 @@ function build_todolist($staff, $status, $todostatus, $project,
         "where t.completed = \"$todoflag\" " .
         $staffclause .
         $statusclause .
-        "and t.priority = \"High\" " .
+        $priorityclause .
         $orderclause;
     $todo_order = $conn->query($query);
     $count = 1;
@@ -221,7 +228,7 @@ function build_todolist($staff, $status, $todostatus, $project,
     
     // Get to-do items and display them    
     $query = "select t.todo_id, t.completed, t.schedule_date, t.completed_date, " .
-        "t.visibility, u.first_name, u.last_name, u.user_id, " .
+        "t.priority, t.visibility, u.first_name, u.last_name, u.user_id, " .
         "u2.user_id as project_owner, u3.user_id as duty_owner, " .
         "p.project_id, p.icon_id as project_icon, p.title as project_title, " .
         "d.duty_id, d.icon_id as duty_icon, d.title as duty_title, t.description " .
@@ -234,7 +241,7 @@ function build_todolist($staff, $status, $todostatus, $project,
         $staffclause .
         $statusclause .
         $visclause .
-        "and t.priority = \"High\" " .
+        $priorityclause .
         $orderclause;
     //printf("query = $query limit " . (($page - 1) * $maxresults) . ", $maxresults <br>\n");
     $list_full = $conn->query($query);
@@ -346,7 +353,7 @@ function build_todolist($staff, $status, $todostatus, $project,
                         $list .= "onclick='{ $(\"check_image_" . $row['todo_id'] . 
                             "\").src=\"images/$checkother\"; modify_todo(\"" . 
                             $row['todo_id'] . "\", \"togglecomplete\", \"$staff\", " .
-                            "\"$status\", \"$todostatus\", \"$project\", \"$duty\", " .
+                            "\"$status\", \"$todostatus\", \"$priority\", \"$project\", \"$duty\", " .
                             "\"$pageflag\", \"$dragonly\", \"$page\", \"$maxresults\"" .
                             ");}'>\n";
                     }
@@ -387,9 +394,10 @@ function build_todolist($staff, $status, $todostatus, $project,
             
             // Show to-do item description
             $list .= "<span class='draghandle' onclick='modify_todo(\"$todostatus" . 
-            "_todolist\", \"updatelist\", \"$staff\", \"$status\", \"$todostatus\", 
-            \"$project\", \"$duty\", \"$pageflag\", \"$dragonly\", \"$page\", 
-            \"$maxresults\");' $bgcolor>" . $row['description'] . "</span>\n";
+            "_todolist\", \"updatelist\", \"$staff\", \"$status\", \"$todostatus\", " .
+            "\"$priority\", \"$project\", \"$duty\", \"$pageflag\", " .
+            "\"$dragonly\", \"$page\", " .
+            "\"$maxresults\");' $bgcolor>" . $row['description'] . "</span>\n";
 
             // Show to-do owner if different from project owner
             if ($project && $project_owner && $todo_owner) {
@@ -430,6 +438,23 @@ function build_todolist($staff, $status, $todostatus, $project,
                     $list .= " (" . short_date($schedule_column) . ")\n";
                 } else if ($todoname) {
                     $list .= " (<b>$todoname</b>)\n";
+                }
+
+                // Priority icon
+                if ($row['priority'] == 'High') {
+                    $list .= "&nbsp; <img src='images/plus.png' height='16' " .
+                        "title='Priority' onclick='modify_todo(\"" . $row['todo_id'] . 
+                        "\", \"togglepriority\", \"$staff\", \"$status\", " . 
+                        "\"$todostatus\", \"$priority\", \"$project\", \"$duty\", " .
+                        "\"$pageflag\", \"$dragonly\", \"$page\", " .
+                        "\"$maxresults\");'>";
+                } else {
+                    $list .= "&nbsp; <img src='images/minus.png' height='16' " .
+                        "title='Priority' onclick='modify_todo(\"" . $row['todo_id'] . 
+                        "\", \"togglepriority\", \"$staff\", \"$status\", " . 
+                        "\"$todostatus\", \"$priority\", \"$project\", \"$duty\", " .
+                        "\"$pageflag\", \"$dragonly\", \"$page\", " .
+                        "\"$maxresults\");'>";
                 }
 
                 // Edit icon
@@ -574,7 +599,9 @@ function build_todolist($staff, $status, $todostatus, $project,
                 // Update and cancel icons
                 $list .= "<input type='button' value='Update' " .
                 "onclick='{modify_todo(\"" . $row['todo_id'] . 
-                "\", \"edititem\", \"$staff\", \"$status\", \"$todostatus\", \"$project\", \"$duty\", \"$pageflag\", \"$dragonly\", \"$page\", \"$maxresults\");}'>  &nbsp; &nbsp; " .
+                "\", \"edititem\", \"$staff\", \"$status\", \"$todostatus\", " .
+                "\"$priority\", \"$project\", \"$duty\", \"$pageflag\", " .
+                "\"$dragonly\", \"$page\", \"$maxresults\");}'>  &nbsp; &nbsp; " .
                 "<input type='button' value='Cancel' onclick='hide_item(\"edit_" . 
                 $row['todo_id'] . "\");'></center></div>\n";
 
@@ -596,7 +623,9 @@ function build_todolist($staff, $status, $todostatus, $project,
                 "<input type='button' value='Confirm Deletion' " .
                 "onclick='{Element.hide(\$(\"confirm_" . $row['todo_id'] . 
                 "\").id); modify_todo(\"" . $row['todo_id'] . 
-                "\", \"deleteitem\", \"$staff\", \"$status\", \"$todostatus\", \"$project\", \"$duty\", \"$pageflag\", \"$dragonly\", \"$page\", \"$maxresults\");" .
+                "\", \"deleteitem\", \"$staff\", \"$status\", \"$todostatus\", " .
+                "\"$priority\", \"$project\", \"$duty\", \"$pageflag\", " .
+                "\"$dragonly\", \"$page\", \"$maxresults\");" .
                 "}'>  &nbsp; &nbsp; " .
                 "<input type='button' value='Cancel' onclick='hide_item(\"confirm_" . 
                 $row['todo_id'] . "\");'></center></div>\n";
@@ -659,13 +688,13 @@ function build_todolist($staff, $status, $todostatus, $project,
     return $list;
 }
 
-function build_two_lists($staff, $status, $project, $duty, $pageflag, $dragonly, 
-    $page, $maxresults) {
+function build_two_lists($staff, $status, $project, $duty, $pageflag, 
+    $dragonly, $page, $maxresults) {
 
-    $two_lists = build_todolist($staff, $status, "Pending", $project, $duty, '0', 
+    $two_lists = build_todolist($staff, $status, "Pending", "All", $project, $duty, '0', 
         '0', $page, $maxresults);
     $two_lists .= "<br>\n";
-    $two_lists .= build_todolist($staff, $status, "Completed", $project, $duty, '0', 
+    $two_lists .= build_todolist($staff, $status, "Completed", "All", $project, $duty, '0', 
         '0', $page, $maxresults);
 
     return $two_lists;

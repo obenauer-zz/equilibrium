@@ -197,7 +197,7 @@ switch($action) {
                 $projects, $project_ids, $row['duty_id'], $duties, $duty_ids, 1));
             printf("</td>\n");
             printf("</td>\n");
-            printf("<td valign='bottom'> &nbsp; <input type='button' value='Add item' onclick='modify_todo(\"txtNewItem\", \"additem\", \"$staff\", \"$status\", \"$todostatus\", \"0\", \"0\", \"1\", \"0\", \"$page\", \"$maxresults\");'></td></tr></table><font size='1'><br></font>\n");
+            printf("<td valign='bottom'> &nbsp; <input type='button' value='Add item' onclick='modify_todo(\"txtNewItem\", \"additem\", \"$staff\", \"$status\", \"$todostatus\", \"$priority\", \"0\", \"0\", \"1\", \"0\", \"$page\", \"$maxresults\");'></td></tr></table><font size='1'><br></font>\n");
             printf("</div>\n");
 
         }
@@ -210,7 +210,7 @@ switch($action) {
         printf("</form>\n");
         
         //showToDoList($staff, $status, $todostatus, $edit_priv);
-        $todolist = build_todolist($staff, $status, $todostatus, 0, 0, 1, 0, 
+        $todolist = build_todolist($staff, $status, $todostatus, $priority, 0, 0, 1, 0, 
             $page, $maxresults);
         printf($todolist);
 

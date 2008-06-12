@@ -37,6 +37,12 @@ if (isset($_REQUEST['todostatus'])) {
     $todostatus = "Completed";
 }
 
+if (isset($_REQUEST['priority'])) {
+    $priority = $_REQUEST['priority'];
+} else {
+    $priority = "High";
+}
+
 if (isset($_REQUEST['edit_priv'])) {
     $edit_priv = $_REQUEST['edit_priv'];
 } else {
@@ -180,7 +186,7 @@ switch($cmd) {
             // Close the database connection
             $conn->close();
 
-            $new_todolist = build_todolist($staff, $status, $todostatus, 
+            $new_todolist = build_todolist($staff, $status, $todostatus, $priority, 
                 $project, $duty, $pageflag, $dragonly, $page, $maxresults);
             printf($new_todolist);
             exit;
@@ -201,7 +207,7 @@ switch($cmd) {
         $content = trim(mysql_real_escape_string($content));
         $result = mysql_query("DELETE FROM todos WHERE todo_id = '$content'");
         mysql_close($conn);
-        $new_todolist = build_todolist($staff, $status, $todostatus, 
+        $new_todolist = build_todolist($staff, $status, $todostatus, $priority, 
             $project, $duty, $pageflag, $dragonly, $page, $maxresults);
         printf($new_todolist);
         break;
@@ -236,7 +242,7 @@ switch($cmd) {
         }
         mysql_close($conn);
 
-        $new_todolist = build_todolist($staff, $status, $todostatus, 
+        $new_todolist = build_todolist($staff, $status, $todostatus, $priority, 
             $project, $duty, $pageflag, $dragonly, $page, $maxresults);
         //$new_todolist .= "UPDATE todos set description = \"" . $newtext . 
         //        "\", duty_id = \"$pdchange\", project_id = \"0\", " .
@@ -369,12 +375,47 @@ switch($cmd) {
         }
         mysql_close($conn);
 
-        $new_todolist = build_todolist($staff, $status, $todostatus, 
+        $new_todolist = build_todolist($staff, $status, $todostatus, $priority, 
             $project, $duty, $pageflag, $dragonly, $page, $maxresults);
         printf($new_todolist);
         exit;
 
         break;
+
+      // Toggle task priority
+      case 'togglepriority':
+
+        $conn = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD)
+            or die ("Cannot connect to database. " . mysql_error() . "\n<br>");
+        mysql_select_db(DB_DATABASE);
+        // escape input data
+        $content = trim(mysql_real_escape_string($content));
+
+        // Check whether task is high or low priority already
+        $result = mysql_query('SELECT priority FROM todos ' .
+            'where todo_id = "' . $content . '"');
+        $row = mysql_fetch_array($result, MYSQL_ASSOC);
+        if ($row['priority'] == "High") {
+
+            // mark task low priority
+            $result = mysql_query('UPDATE todos set priority = "Low" WHERE todo_id="'
+                . $content . '"');
+
+        } else {
+
+            // mark task completed
+            $result = mysql_query('UPDATE todos set priority = "High" WHERE todo_id="'
+                . $content . '"');
+        }
+        mysql_close($conn);
+
+        $new_todolist = build_todolist($staff, $status, $todostatus, $priority, 
+            $project, $duty, $pageflag, $dragonly, $page, $maxresults);
+        printf($new_todolist);
+        exit;
+
+        break;
+    //}
 
     case "togglecomplete";
 
@@ -403,7 +444,7 @@ switch($cmd) {
         }          
         mysql_close($conn);
         
-        $new_todolist = build_todolist($staff, $status, $todostatus, 
+        $new_todolist = build_todolist($staff, $status, $todostatus, $priority, 
             $project, $duty, $pageflag, $dragonly, $page, $maxresults);
         printf($new_todolist);
         break;
@@ -433,7 +474,7 @@ switch($cmd) {
         }          
         mysql_close($conn);
         
-        $new_twolists = build_two_lists($staff, $status, 
+        $new_twolists = build_two_lists($staff, $status, $priority, 
             $project, $duty, $pageflag, $dragonly, $page, $maxresults);
         printf($new_twolists);
         break;

@@ -188,6 +188,12 @@ if (isset($_REQUEST['todostatus'])) {
     $todostatus = "Pending";
 }
 
+if (isset($_REQUEST['priority'])) {
+    $priority = $_REQUEST['priority'];
+} else {
+    $priority = "High";
+}
+
 // Declare PHP functions
 require("equilibrium.php");
 
