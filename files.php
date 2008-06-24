@@ -52,7 +52,7 @@ if (isset($_REQUEST['page'])) {
 if (isset($_REQUEST['pageflag'])) {
     $pageflag = $_REQUEST['pageflag'];
 } else {
-    $pageflag = 0;
+    $pageflag = 1;
 }
 
 if ((isset($_REQUEST['project'])) && (is_numeric($_REQUEST['project']))) {
@@ -125,24 +125,45 @@ function show_files($staff, $filetype, $fromdate, $todate, $pageflag,
     global $heading_color;
     
     // Define filetype clause
-    if (($filetype == "") || ($filetype == NULL)) {
+    if (($filetype == "") || ($filetype == "NULL")) {
         $fileclause = "and file_type is null ";
     } else {
         $fileclause = "and file_type = \"$filetype\" ";
     }
+
+    // Define staff clause
+    if ($staff == 0) {
+        $staffclause = "";
+    } else {
+        $staffclause = "and uploaded_by = \"$staff\" ";
+    }
+
     $conn = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD) 
         or die ("Cannot connect to database. " . mysql_error() . "\n<br>");
     mysql_select_db(DB_DATABASE);
-    $get_files = mysql_query("select file_id, file_type, file_name, description, " .
+    $query = "select file_id, file_type, file_name, description, " .
         "upload_date, upload_time, file_path from files " .
-        "where uploaded_by = \"$staff\" " .
-        "and upload_date >= \"$fromdate\" " .
+        "where upload_date >= \"$fromdate\" " .
         "and upload_date <= \"$todate\" " .
+        $staffclause .
         $fileclause .
-        "order by upload_time desc ");
+        "order by upload_time desc ";
+    $list_full = mysql_query($query);
 
-    if (mysql_num_rows($get_files)) {
-        while ($row = mysql_fetch_array($get_files, MYSQL_ASSOC)) {
+    // Allow paging option
+    if ($pageflag) {
+        $list_page = mysql_query($query . "limit " . (($page - 1) * $maxresults) .
+            ", $maxresults ");
+        $page_url = "files.php?staff=$staff&filetype=$filetype&fromdate=$fromdate" .
+            "&todate=$todate";
+        printf("%s", page_results(mysql_num_rows($list_page), $page, $maxresults,
+            $page_url));
+    } else {
+        $list_page = $list_full;
+    }
+
+    if (mysql_num_rows($list_page)) {
+        while ($row = mysql_fetch_array($list_page, MYSQL_ASSOC)) {
             printf("<a href=\"%s/%s\">%s</a>, %s \n", $row['file_path'], 
                 $row['file_name'], $row['file_name'], $row['description']);
             if ($row['file_type']) {
@@ -178,7 +199,8 @@ function show_files($staff, $filetype, $fromdate, $todate, $pageflag,
         printf("<p>No files found for the selected criteria.</p>\n");
     }
 
-    mysql_free_result($get_files);
+    mysql_free_result($list_page);
+    @mysql_free_result($list_full);
     mysql_close($conn);
     
     return;

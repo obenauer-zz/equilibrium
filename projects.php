@@ -1200,15 +1200,19 @@ switch($cmd) {
 
     case "deletefile":
 
-        // Delete file from filesystem
-        $err = unlink("$dirtree/$existingfile");
-        if (!$err) {
-            $activepage = "Projects";
-            require("header.php");
-            printf("<p>Error deleting file: Could not be removed from filesystem.</p>\n");
-            require("footer.php");
-            exit;
+        // Check if file exists
+        if (file_exists("$dirtree/$existingfile")) {
 
+            // Delete file from filesystem
+            $err = unlink("$dirtree/$existingfile");
+            if (!$err) {
+                $activepage = "Projects";
+                require("header.php");
+                printf("<p>Error deleting file: Could not be removed from filesystem.</p>\n");
+                require("footer.php");
+                exit;
+
+            }
         }
 
         // Delete file from files table

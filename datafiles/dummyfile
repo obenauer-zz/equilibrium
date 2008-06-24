@@ -1,0 +1,3 @@
+Git will not track empty directories.  This file is just put here so that Git
+will create it whenever the source code is downloaded.
+
