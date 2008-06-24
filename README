@@ -54,9 +54,12 @@ Equilibrium is built on (and requires) the widely used LAMP architecture
 (Linux, Apache, MySQL, and PHP).  Though originally developed for Linux,
 it also works on Mac OS X and Windows XP/Vista with Apache, MySQL, and
 PHP installed and running.  An easy way to install all of these dependencies
-on the Mac or Windows platforms is to use the XAMPP software (http://www.apachefriends.org/en/xampp.html).  Installing the dependencies
-in Linux is even easier, using apt-get or Synaptic for Debian-based distributions,
+on the Mac or Windows platforms is to use the XAMPP software
+(http://www.apachefriends.org/en/xampp.html).  Installing the dependencies
+in Linux is even easier, using apt-get or Synaptic for Debian-based
+distributions, and yum for RPM-based distributions.
 
 Several other free software projects are used by Equilibrium and included
 in the "external" subdirectory of the code:  Prototype, Scriptaculous,
 and the DHTML/Javascript Calendar from dynarch.com.
+
