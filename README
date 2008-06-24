@@ -1,5 +1,62 @@
-Equilibrium uses PHP5, MySQL5, and Apache2.  It is developed for Linux but may work on Macs and Windows with Apache, MySQL, and PHP installed.  An easy way to install all of these on the other platforms is to use XAMPP.
+Equilibrium is an open source project managment application.  It was designed
+to help its multitasking-challenged author keep track of many on-going projects
+and responsibilities.  It is useful for managing small groups (1-20 people or so)
+and keeping track of what everyone is working on.  People often keep track of
+their work with to-do lists, project spreadsheets, notebooks, and document files.
+Equilibrium combines all these things into a single web-based application.
 
-Equilibrium was designed for small groups of people working together, up to about 20 (limited by drop-down boxes of staff names getting inconveniently long).  It may be worth extending Equilibrium to allow multiple teams to use a single copy.
+There are five main parts to the program.  The first is the To Do List page,
+which lists all the pending tasks for the user or any selected staff member.
+These can be rearranged by drag-and-drop to reflect their priority order
+(thanks to the Scriptaculous library).  To-do items can easily be edited,
+deleted, marked complete, or scheduled for a particular day.  Completed
+to-do items can be listed for a quick summary of what each person has done
+recently.
 
-UPDATE (5/29/08) - It definitely will run great on Mac OS X Leopard's natively installed PHP/Apache.
+The second part is the Projects page.  Users can enter a project simply
+with a title and description, and can optionally add a client or contact
+person who the project is for.  Administrators have the option of requiring
+each user to select a "type" for each project (e.g. programming, training,
+administrative tasks -- the administrator decides what the list of types
+are).  The default view on the Projects page is the list of all active
+projects.  Another view shows the details for a specified project,
+such as its status, who is working on it, and when it was started and completed.
+For each project, users can enter to-do items (they will also show up on the
+To Do List page when the project is Active) and comments, and can upload
+files (such as a project report, or slides from a presentation).
+
+The third part is the Duties page.  Duties are long-term responsibilities
+that may not have a clear end date, such as software maintenance and
+upgrades, monthly training sessions, or committee meetings.  Like the
+Projects page, the Duties page allows users to enter to-do items, comments,
+and files, but duties don't have a "Completed" status (just Active or Inactive).
+
+The fourth part is the Log page.  This is a place to enter notes or comments
+(the outcome of a meeting, hiring decisions, policy changes, etc.).  Comments
+entered on the Projects or Duties pages are visible here too.  HTML tags
+can be used in comments to display italics, bold type, underlines, etc.
+
+The fifth and last main part of the application is the Files page.  This makes
+it easy to find files uploaded by any staff member to their Projects or Duties
+pages.  This can provide a convenient central repository for files of
+interest to the whole group.  The files can be searched by a date range
+(the default is the past year) and by a type, as specified by the administrator.
+Examples of useful file types are "Report", "Protocol", or "Presentation".
+
+Other features are that users can log in using their institution's single
+sign-on system (usually Active Directory or LDAP), so that they won't have
+to remember new passwords to log into Equilibrium; multiple staff members
+can be assigned to the same project; and projects can be marked "Private",
+viewable only by the person who entered them, as can duties, to-do items,
+and comments.
+
+Equilibrium is built on (and requires) the widely used LAMP architecture
+(Linux, Apache, MySQL, and PHP).  Though originally developed for Linux,
+it also works on Mac OS X and Windows XP/Vista with Apache, MySQL, and
+PHP installed and running.  An easy way to install all of these dependencies
+on the Mac or Windows platforms is to use the XAMPP software (http://www.apachefriends.org/en/xampp.html).  Installing the dependencies
+in Linux is even easier, using apt-get or Synaptic for Debian-based distributions,
+
+Several other free software projects are used by Equilibrium and included
+in the "external" subdirectory of the code:  Prototype, Scriptaculous,
+and the DHTML/Javascript Calendar from dynarch.com.
