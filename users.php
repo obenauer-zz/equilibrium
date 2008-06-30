@@ -87,7 +87,7 @@ if ($cmd == "add") {
         <input type='hidden' name='cmd' value='insert'>
         <table cellpadding=0><tr><td>
         <tr><td colspan='2'><b>User Information: &nbsp; </b></td></tr>
-        <tr><td align='right'><b>SJ Username &nbsp; </b></td><td><input type='text' name='newlogin' value='' size=15></td></tr>
+        <tr><td align='right'><b>Log-in Name &nbsp; </b></td><td><input type='text' name='newlogin' value='' size=15></td></tr>
         <tr><td align='right'><b>First Name &nbsp; </b></td><td><input type='text' name='first_name' value='' size=15></td></tr>
         <tr><td align='right'><b>Last Name &nbsp; </b></td><td><input type='text' name='last_name' value='' size=15></td></tr>
         <tr><td align='right'><b>Email Address &nbsp; </b></td><td><input type='text' name='email' value='' size=30></td></tr>
@@ -146,7 +146,7 @@ if ($cmd == "add") {
         // Validate form data
         $repeat_entry = 0;
         if (!$newlogin) {
-            printf("Error: SJ Username was not specified and is required.<br>\n");
+            printf("Error: Login Name was not specified and is required.<br>\n");
             $repeat_entry = 1;
         } else if (!$last_name) {
             printf("Error: Last Name was not specified and is required.<br>\n");
@@ -166,7 +166,7 @@ if ($cmd == "add") {
             <input type='hidden' name='cmd' value='insert'>
             <table cellpadding=0><tr><td>
             <tr><td colspan='2'><b>User Information: &nbsp; </b></td></tr>
-            <tr><td align='right'><b>SJ Username &nbsp; </b></td><td><input type='text' name='newlogin' value='<?= $newlogin ?>' size=15></td></tr>
+            <tr><td align='right'><b>Log-in Name &nbsp; </b></td><td><input type='text' name='newlogin' value='<?= $newlogin ?>' size=15></td></tr>
             <tr><td align='right'><b>First Name &nbsp; </b></td><td><input type='text' name='first_name' value='<?= $first_name ?>' size=15></td></tr>
             <tr><td align='right'><b>Last Name &nbsp; </b></td><td><input type='text' name='last_name' value='<?= $last_name ?>' size=15></td></tr>
             <tr><td align='right'><b>Email Address &nbsp; </b></td><td><input type='text' name='email' value='<?= $email ?>' size=30></td></tr>
@@ -279,7 +279,7 @@ if ($cmd == "add") {
         <input type='hidden' name='cmd' value='update'>
         <input type='hidden' name='userid' value='<?=$userid?>'>
         <table cellpadding=0><tr><td>
-        <tr><td><b>SJ Username:</b></td><td><input type='text' name='newlogin' value='<?= $newlogin ?>' size=15></td></tr>
+        <tr><td><b>Login Name:</b></td><td><input type='text' name='newlogin' value='<?= $newlogin ?>' size=15></td></tr>
         <tr><td><b>First Name:</b></td><td><input type='text' name='first_name' value='<?= $first_name ?>' size=15></td></tr>
         <tr><td><b>Last Name:</b></td><td><input type='text' name='last_name' value='<?= $last_name ?>' size=15></td></tr>
         <tr><td><b>Email Address:</b></td><td><input type='text' name='email' value='<?= $email ?>' size=30></td></tr>
@@ -325,7 +325,7 @@ if ($cmd == "add") {
     // Validate form data
     $repeat_entry = 0;
     if (!$newlogin) {
-        printf("<font color='red'>Error: SJ Username was not specified and is required.</font><br>\n");
+        printf("<font color='red'>Error: Log-in Name was not specified and is required.</font><br>\n");
         $repeat_entry = 1;
     } else if (!$last_name) {
         printf("<font color='red'>Error: Last Name was not specified and is required.</font><br>\n");
@@ -342,7 +342,7 @@ if ($cmd == "add") {
         <input type='hidden' name='cmd' value='update'>
         <input type='hidden' name='userid' value='<?=$userid?>'>
         <table cellpadding=0><tr><td>
-        <tr><td><b>SJ Username:</b></td><td><input type='text' name='newlogin' value='<?= $newlogin ?>' size=15></td></tr>
+        <tr><td><b>Log-in Name:</b></td><td><input type='text' name='newlogin' value='<?= $newlogin ?>' size=15></td></tr>
         <tr><td><b>First Name:</b></td><td><input type='text' name='first_name' value='<?= $first_name ?>' size=15></td></tr>
         <tr><td><b>Last Name:</b></td><td><input type='text' name='last_name' value='<?= $last_name ?>' size=15></td></tr>
         <tr><td><b>Email Address:</b></td><td><input type='text' name='email' value='<?= $email ?>' size=30></td></tr>

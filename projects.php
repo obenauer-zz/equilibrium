@@ -207,6 +207,12 @@ if (isset($_REQUEST['priority'])) {
     $priority = "High";
 }
 
+if (isset($_REQUEST['calmode'])) {
+    $calmode = $_REQUEST['calmode'];
+} else {
+    $calmode = 0;
+}
+
 // Declare PHP functions
 require("equilibrium.php");
 
@@ -1348,18 +1354,15 @@ switch($action) {
         if ($edit_priv == "Y") {
             printf("<div>\n<input type='text' id='txtNewItem' name='txtNewItem' " .
                 "size='80%%' maxlength='255' onkeydown='handleItemKey(event, " .
-                "\"$staff\", \"$status\", \"$todostatus\", \"$priority\", " .
+                "\"$staff\", \"$status\", \"$todostatus\", \"$priority\", \"$calmode\", " .
                 "\"$project\", \"0\", \"0\", \"0\", \"$page\", \"$maxresults\");'>\n");
             printf("<input type='button' name='submit' value='Add item' " .
                 "onclick='modify_todo(\"txtNewItem\", \"additem\", \"$staff\", " .
-                "\"$status\", \"$todostatus\", \"$priority\", \"$project\", " .
+                "\"$status\", \"$todostatus\", \"$priority\", \"$calmode\", \"$project\", " .
                 "\"0\", \"0\", \"0\", \"$page\", \"$maxresults\");'>\n</div><br>\n");
         }
         printf("<div id='todo_section'>\n");
-        //printf("%s", build_todolist($staff, $status, "Pending", $project, '0', '0', '0', $page, $maxresults));
-        //printf("<br>\n");
-        //printf("%s", build_todolist($staff, $status, "Completed", $project, '0', '0', '0', $page, $maxresults));
-        printf(build_two_lists($staff, $status, $project, '0', '0', '0', $page, $maxresults));
+        printf(build_two_lists($staff, $status, "All", $calmode, $project, '0', '0', '0', $page, $maxresults));
         printf("</div>\n");
 
         // Comments

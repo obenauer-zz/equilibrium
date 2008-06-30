@@ -50,6 +50,12 @@ if (isset($_REQUEST['priority'])) {
     $priority = "High";
 }
 
+if (isset($_REQUEST['calmode'])) {
+    $calmode = $_REQUEST['calmode'];
+} else {
+    $calmode = 0;
+}
+
 if (isset($_REQUEST['content'])) {
     $content = $_REQUEST['content'];
 } else {
@@ -110,67 +116,11 @@ require("equilibrium.php");
 
 // Commands that don't generate HTML output
 switch($cmd) {
-    case "updatelist";
-        if ($order) {
-            $todo_order = explode(",", $order);
-
-            // Re-order to-do items in response to drag and drop
-            $conn = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE);
-            $errorflag = 0;
-            for ($i = 0; $i < count($todo_order); $i++) {
-                
-                $query = "update todos set order_number = \"" . ($i + 1) . "\" " .
-                    "where todo_id = \"" . $todo_order[$i] . "\" ";
-                $update = $conn->query($query);
-                if ($update != 1) {
-                    $errorflag = 1;
-                }
-            }
-            // Close the database connection
-            $conn->close();
-
-            $new_todolist = build_todolist($staff, $status, $todostatus, $edit_priv, 
-                0, 0, 1, $page, $maxresults);
-            //printf($errorflag);
-            printf($new_todolist);
-            exit;
-        } else {
-            require("header.php");
-            printf("<p>Error updating to-do list: Order is not specified.</p>\n");
-            require("footer.php");
-            exit;
-        }
-
+    case "":
         break;
-    case "toggleComplete";
-
-        // Check whether task is already marked completed
-        $conn = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE);
-        $query = "SELECT completed FROM todos " .
-            "where todo_id = '" . $content . "'";
-        $get_status = $conn->query($query);
-        $row = $get_status->fetch_assoc();
-        if ($row['completed'] == "Y") {
-        
-            // mark task NOT completed
-            $result = $conn->query('UPDATE todos set completed = "N" WHERE todo_id="' . 
-                                            $content . '"');
-        } else {
-        
-            // mark task completed
-            $result = $conn->query('UPDATE todos set completed = "Y", completed_date = curdate() WHERE todo_id="' . 
-                                            $content . '"');
-        }          
-
-        // Close the database connection
-        $conn->close();
-        //exit;
-        header("Location: todolist.php?status=$status&staff=$staff&todostatus=$todostatus&maxresults=$maxresults&page=$page");
-        
+    case "":
         break;
-    case "";
-        break;
-    case "";
+    default:
         break;
 }
 
@@ -178,8 +128,6 @@ switch($cmd) {
 $activepage = "ToDo";
 require("header.php");
 
-?>
-<?php
 switch($action) {
     case "";
         printf("<h2>To Do List</h2>\n");
@@ -190,11 +138,18 @@ switch($action) {
             printf("<td>\n");
             printf("<input type='button' name='add_item_button' id='add_item_button'></td>\n");
             
-            // Button: Assign To Projects
-            //printf("<td><form action='todolist.php' method='post'>\n");
-            //printf("<input type='hidden' name='action' value='edit'>\n");
-            //printf("<input type='submit' value='Assign To Projects'></form></td>\n");
-            printf("</tr></table>\n");
+            // Button: Calendar Mode / List Mode (toggle)
+            if ($calmode) {
+                printf("<td><form action='todolist.php' method='post'>\n");
+                printf("<input type='hidden' name='calmode' value='0'>\n");
+                printf("<input type='submit' value='Use List Mode'></form></td>\n");
+                printf("</tr></table>\n");
+            } else {
+                printf("<td><form action='todolist.php' method='post'>\n");
+                printf("<input type='hidden' name='calmode' value='1'>\n");
+                printf("<input type='submit' value='Use Calendar Mode'></form></td>\n");
+                printf("</tr></table>\n");
+            }
         
             // Javascript for add new item button
             printf("<script type='text/javascript'>\n");
@@ -205,7 +160,9 @@ switch($action) {
             printf("<div id='add_item_form' class='addbox'>\n");
             printf("<table cellpadding='0' cellspacing='0'><tr valign='bottom'><td>Add new item<br>\n");
             printf("<input type='text' id='txtNewItem' name='txtNewItem' " .
-            "size='80%%' maxlength='255' onkeydown='handleItemKey(event, \"$staff\", \"$status\", \"$todostatus\", \"0\", \"0\", \"1\", \"0\", \"$page\", \"$maxresults\");'></td>\n");
+                "size='80%%' maxlength='255' onkeydown='handleItemKey(event, \"$staff\", " .
+                "\"$status\", \"$todostatus\", \"$priority\", \"$calmode\", " .
+                "\"0\", \"0\", \"1\", \"0\", \"$page\", \"$maxresults\");'></td>\n");
     
             // Project/duty selection
             printf("<td>");
@@ -214,7 +171,11 @@ switch($action) {
                 $projects, $project_ids, $row['duty_id'], $duties, $duty_ids, 1));
             printf("</td>\n");
             printf("</td>\n");
-            printf("<td valign='bottom'> &nbsp; <input type='button' value='Add item' onclick='modify_todo(\"txtNewItem\", \"additem\", \"$staff\", \"$status\", \"$todostatus\", \"$priority\", \"0\", \"0\", \"1\", \"0\", \"$page\", \"$maxresults\");'></td></tr></table><font size='1'><br></font>\n");
+            printf("<td valign='bottom'> &nbsp; <input type='button' value='Add item' " .
+                "onclick='modify_todo(\"txtNewItem\", \"additem\", \"$staff\", " .
+                "\"$status\", \"$todostatus\", \"$priority\", \"$calmode\", " .
+                "\"0\", \"0\", \"1\", \"0\", \"$page\", \"$maxresults\");'>" .
+                "</td></tr></table><font size='1'><br></font>\n");
             printf("</div>\n");
 
         }
@@ -227,8 +188,8 @@ switch($action) {
         printf("</form>\n");
         
         //showToDoList($staff, $status, $todostatus, $edit_priv);
-        $todolist = build_todolist($staff, $status, $todostatus, $priority, 0, 0, 1, 0, 
-            $page, $maxresults);
+        $todolist = build_todolist($staff, $status, $todostatus, $priority,
+            $calmode, 0, 0, 1, 0, $page, $maxresults);
         printf($todolist);
 
         // Set variable for project/duty flag

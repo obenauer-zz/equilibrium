@@ -85,7 +85,7 @@ function trim(s) {
 
 
 function modify_todo(content, action, staff, status, todostatus, 
-    priority, project, duty, pageflag, dragonly, page, maxresults) {
+    priority, calmode, project, duty, pageflag, dragonly, page, maxresults) {
 
     //alert("modify_todo activated");
     //alert("page = " + page);
@@ -149,10 +149,10 @@ function modify_todo(content, action, staff, status, todostatus,
             var staffchange = $('staff_assigned_' + content).value;
             var visibility = $('visibility_' + content).value;
             var scheduledate = $('schedule_' + content).value;
-            //alert("pdflag = " + pdflag + ", pdchange = " + pdchange 
+            //alert("pdflag = " + pdflag + ", pdchange = " + pdchange
             //    + ", staffchange = " + staffchange + ", visibility = " + visibility);
-            params = "?content=" + content + "&cmd=edititem" + "&newtext=" + newtext 
-                + "&pdflag=" + pdflag + "&pdchange=" + pdchange + "&staffchange=" + 
+            params = "?content=" + content + "&cmd=edititem" + "&newtext=" + newtext
+                + "&pdflag=" + pdflag + "&pdchange=" + pdchange + "&staffchange=" +
                 staffchange + "&visibility=" + visibility + "&scheduledate=" + scheduledate;
 
         } else if (action == "togglecomplete") {
@@ -163,8 +163,8 @@ function modify_todo(content, action, staff, status, todostatus,
         if (params) {
             cache.push(params + "&staff=" + staff + "&status=" + status 
                 + "&todostatus=" + todostatus + "&priority=" + priority
-                + "&project=" + project + "&duty=" 
-                + duty + "&pageflag=" + pageflag + "&dragonly=" + dragonly 
+                + "&calmode=" + calmode + "&project=" + project + "&duty="
+                + duty + "&pageflag=" + pageflag + "&dragonly=" + dragonly
                 + "&page=" + page + "&maxresults=" + maxresults);
         }
 
@@ -187,9 +187,9 @@ function modify_todo(content, action, staff, status, todostatus,
             } else {
                 setTimeout("modify_todo('" + content + "', '" + action + "', '" 
                     + staff + "', '" + status + "', '" + todostatus + "', '" 
-                    + priority + "', '" 
+                    + priority + "', '" + calmode + "', '"
                     + project + "', '" + duty + "', '" + pageflag + "', '" 
-                    + dragonly + "', '" + page + "', " + maxresults + "' );", 1000);  
+                    + dragonly + "', '" + page + "', '" + maxresults + "' );", 1000);
             }
         }
 
@@ -202,8 +202,8 @@ function modify_todo(content, action, staff, status, todostatus,
     return;
 }
 
-function modify_two_lists(content, action, staff, status,
-    project, duty, pageflag, dragonly, page, maxresults) {
+function modify_two_lists(content, action, staff, status, priority,
+    calmode, project, duty, pageflag, dragonly, page, maxresults) {
 
     //alert("modify_todo activated");
     //alert("page = " + page);
@@ -222,6 +222,7 @@ function modify_two_lists(content, action, staff, status,
       
         if (params) {
             cache.push(params + "&staff=" + staff + "&status=" + status 
+                + "&priority=" + priority + "&calmode=" + calmode
                 + "&project=" + project + "&duty=" 
                 + duty + "&pageflag=" + pageflag + "&dragonly=" + dragonly 
                 + "&page=" + page + "&maxresults=" + maxresults);
@@ -242,8 +243,9 @@ function modify_two_lists(content, action, staff, status,
             } else {
                 setTimeout("modify_two_lists('" + content + "', '" + action + "', '" 
                     + staff + "', '" + status + "', '" 
+                    + priority + "', '" + calmode + "', '"
                     + project + "', '" + duty + "', '" + pageflag + "', '" 
-                    + dragonly + "', '" + page + "', " + maxresults + "' );", 1000);  
+                    + dragonly + "', '" + page + "', '" + maxresults + "' );", 1000);
             }
         }
 
@@ -375,7 +377,7 @@ function rebuild_two_lists()
 
 // Watch for user pressing enter key -- Add New Item
 function handleItemKey(e, staff, status, todostatus, priority, 
-    project, duty, pageflag, dragonly, page, maxresults) {
+    calmode, project, duty, pageflag, dragonly, page, maxresults) {
 
     //alert("handleItemKey activated.");
 
@@ -389,7 +391,7 @@ function handleItemKey(e, staff, status, todostatus, priority,
         // Enter/return is code 13
         if (code == 13) {
             modify_todo("txtNewItem", "additem", staff, status, todostatus, priority, 
-                project, duty, pageflag, dragonly, page, maxresults);
+                calmode, project, duty, pageflag, dragonly, page, maxresults);
             //alert("staff = " + staff + ", status = " + status + ", todostatus = " + todostatus + ", project = " + project + ", duty = " + duty + ", pageflag = " + pageflag + ", dragonly = " + dragonly + ", page = " + page + ", maxresults = " + maxresults);
         }
     }

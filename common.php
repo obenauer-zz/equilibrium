@@ -60,6 +60,12 @@ if (isset($_REQUEST['priority'])) {
     $priority = "High";
 }
 
+if (isset($_REQUEST['calmode'])) {
+    $calmode = $_REQUEST['calmode'];
+} else {
+    $calmode = 0;
+}
+
 if (isset($_REQUEST['edit_priv'])) {
     $edit_priv = $_REQUEST['edit_priv'];
 } else {
@@ -204,7 +210,7 @@ switch($cmd) {
             $conn->close();
 
             $new_todolist = build_todolist($staff, $status, $todostatus, $priority, 
-                $project, $duty, $pageflag, $dragonly, $page, $maxresults);
+                $calmode, $project, $duty, $pageflag, $dragonly, $page, $maxresults);
             printf($new_todolist);
             exit;
         } else {
@@ -225,7 +231,7 @@ switch($cmd) {
         $result = mysql_query("DELETE FROM todos WHERE todo_id = '$content'");
         mysql_close($conn);
         $new_todolist = build_todolist($staff, $status, $todostatus, $priority, 
-            $project, $duty, $pageflag, $dragonly, $page, $maxresults);
+            $calmode, $project, $duty, $pageflag, $dragonly, $page, $maxresults);
         printf($new_todolist);
         break;
 
@@ -260,7 +266,7 @@ switch($cmd) {
         mysql_close($conn);
 
         $new_todolist = build_todolist($staff, $status, $todostatus, $priority, 
-            $project, $duty, $pageflag, $dragonly, $page, $maxresults);
+            $calmode, $project, $duty, $pageflag, $dragonly, $page, $maxresults);
         //$new_todolist .= "UPDATE todos set description = \"" . $newtext . 
         //        "\", duty_id = \"$pdchange\", project_id = \"0\", " .
         //        "staff_assigned = \"$staffchange\", " . 
@@ -393,7 +399,7 @@ switch($cmd) {
         mysql_close($conn);
 
         $new_todolist = build_todolist($staff, $status, $todostatus, $priority, 
-            $project, $duty, $pageflag, $dragonly, $page, $maxresults);
+            $calmode, $project, $duty, $pageflag, $dragonly, $page, $maxresults);
         printf($new_todolist);
         exit;
 
@@ -427,7 +433,7 @@ switch($cmd) {
         mysql_close($conn);
 
         $new_todolist = build_todolist($staff, $status, $todostatus, $priority, 
-            $project, $duty, $pageflag, $dragonly, $page, $maxresults);
+            $calmode, $project, $duty, $pageflag, $dragonly, $page, $maxresults);
         printf($new_todolist);
         exit;
 
@@ -462,7 +468,7 @@ switch($cmd) {
         mysql_close($conn);
         
         $new_todolist = build_todolist($staff, $status, $todostatus, $priority, 
-            $project, $duty, $pageflag, $dragonly, $page, $maxresults);
+            $calmode, $project, $duty, $pageflag, $dragonly, $page, $maxresults);
         printf($new_todolist);
         break;
 
@@ -491,7 +497,7 @@ switch($cmd) {
         }          
         mysql_close($conn);
         
-        $new_twolists = build_two_lists($staff, $status, $priority, 
+        $new_twolists = build_two_lists($staff, $status, $priority, $calmode,
             $project, $duty, $pageflag, $dragonly, $page, $maxresults);
         printf($new_twolists);
         break;
