@@ -192,6 +192,64 @@ switch($cmd) {
                 $order_var = "order_number";
             }
             
+            if ($calmode) {
+
+                // Remove alphabetic div's from to-do order
+                $modlist = array();
+                $modcount = 0;
+                for ($i = 0; $i < count($todo_order); $i++) {
+                    if (is_numeric($todo_order[$i])) {
+                        $modlist[$modcount] = $todo_order[$i];
+                        $modcount++;
+                    }
+                }
+                $numeric_todos = implode(",", $modlist);
+
+                // Retrieve existing order of to-do's
+                $conn = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD)
+                    or die ("Cannot connect to database. " . mysql_error() . "\n<br>\n");
+                mysql_select_db(DB_DATABASE);
+                $get_orig_order = mysql_query("select todo_id from todos " .
+                    "where todo_id in ($numeric_todos) order by $order_var asc ");
+                $oldorder = array();
+                $oldcount = 0;
+                while ($row = mysql_fetch_array($get_orig_order, MYSQL_ASSOC)) {
+                    $oldorder[$oldcount] = $row['todo_id'];
+                    $oldcount++;
+                }
+                mysql_free_result($get_orig_order);
+
+                // Get schedule dates of to-do's near the moved one
+                $mover = 0;
+                $datepartner = 0;
+                find_mover($oldorder, $todo_order, $mover, $datepartner);
+
+                // Re-assign scheduled date of moved to-do item
+                $get_copy_date = mysql_query("select schedule_date from todos " .
+                    "where todo_id = \"" . $datepartner . "\" ");
+                if ($row = mysql_fetch_array($get_copy_date, MYSQL_ASSOC)) {
+                    $copied_date = $row['schedule_date'];
+                }
+                mysql_free_result($get_copy_date);
+                if (($copied_date == "0000-00-00") || ($copied_date == "")) {
+                    $copied_date = "NULL";
+                } else {
+                    // Don't allow scheduling a to-do to a past date
+                    $parts = explode("-", $copied_date);
+                    $calday = mktime(0, 0, 0, $parts[1], $parts[2], $parts[0]);
+                    $today = mktime(0, 0, 0, date("m"), date("d"), date("Y"));
+                    if ($calday < $today) {
+                        $copied_date = "NULL";
+                    }
+                }
+                $query = "update todos set schedule_date = \"" . $copied_date . "\" " .
+                    "where todo_id = \"" . $mover . "\" ";
+                $update = mysql_query($query);
+                if ($update != 1) {
+                    $errorflag = 1;
+                }
+            }
+
             // Re-order to-do items in response to drag and drop
             $conn = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE);
             $errorflag = 0;

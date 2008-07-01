@@ -1429,7 +1429,7 @@ switch($action) {
         
             // Show page numbers for results
             $page_url = "duties.php?staff=$staff&status=$status&todostatus=" .
-                "$todostatus";
+                "$todostatus&priority=$priority&calmode=$calmode";
             printf("%s\n", page_results(mysql_num_rows($get_duties_full), 
                 $page, $maxresults, $page_url));
 

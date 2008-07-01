@@ -289,7 +289,8 @@ function build_todolist($staff, $status, $todostatus, $priority, $calmode,
         
         // Show page numbers for results
         if ($pageflag) {
-            $page_url = "todolist.php?staff=$staff&status=$status&todostatus=$todostatus";
+            $page_url = "todolist.php?staff=$staff&status=$status&todostatus=$todostatus" .
+                "&priority=$priority&calmode=$calmode";
             $list .= page_results($list_full->num_rows, $page, $maxresults, $page_url);
             //$list .= "BUILD_TODOLIST PAGEFLAG=$pageflag<BR>\n";
         }
@@ -301,6 +302,7 @@ function build_todolist($staff, $status, $todostatus, $priority, $calmode,
         //    "\"common.php?cmd=updatelist&staff=$staff&status=$status" .
         //    "&todostatus=$todostatus&edit_priv=$edit_priv&project=$project&duty=$duty&pageflag=$pageflag\");'>\n";
 
+        $lastscheduledate = "";
         while ($row = $list_page->fetch_array(MYSQLI_ASSOC)) {
 
             // If schedule date is present, convert it to Unix time
@@ -360,6 +362,27 @@ function build_todolist($staff, $status, $todostatus, $priority, $calmode,
                 $bgcolor = "";
             }
             
+            // Draw lines between to-do's with different schedule dates
+            // (in Calendar Mode)
+            if ($calmode) {
+                if (($lastscheduledate == "") && ($pastscheduledate)) {
+                    $list .= "<div id='A" . $row['todo_id'] . "'>";
+                    $list .= "<font color='blue' size='-1'><b>" .
+                        "Overdue</b></font><br clear=left></div>\n";
+                } else if ($row['schedule_date'] != $lastscheduledate) {
+                    $list .= "<div id='A" . $row['todo_id'] . "'>";
+                    if ($row['schedule_date']) {
+                        $list .= "<font color='blue' size='-1'><b>" .
+                            short_date($row['schedule_date']) .
+                            "</b></font><br clear=left></div>\n";
+                    } else {
+                        $list .= "<font color='blue' size='-1'><b>" .
+                            "Unscheduled</b></font><br clear=left></div>\n";
+                    }
+                }
+                $lastscheduledate = $row['schedule_date'];
+            }
+
             $list .= "<div class='todo_item' id='" . $row['todo_id']. "' style='background-color: " . $background_color . "'>\n";
             $list .= "<table style='font-size: 14px'><tr valign='top'>\n";
 
@@ -461,12 +484,28 @@ function build_todolist($staff, $status, $todostatus, $priority, $calmode,
 
             } else {
                 
-                if ($todoname && $schedule_column) {
-                    $list .= " (<b>$todoname</b>, " . short_date($schedule_column) . ")\n";
-                } else if ($schedule_column) {
-                    $list .= " (" . short_date($schedule_column) . ")\n";
-                } else if ($todoname) {
-                    $list .= " (<b>$todoname</b>)\n";
+                if ($calmode) {
+                    if ($pastscheduledate) {
+                        if ($todoname && $schedule_column) {
+                            $list .= " (<b>$todoname</b>, " . short_date($schedule_column) . ")\n";
+                        } else if ($schedule_column) {
+                            $list .= " (" . short_date($schedule_column) . ")\n";
+                        } else if ($todoname) {
+                            $list .= " (<b>$todoname</b>)\n";
+                        }
+                    } else {
+                        if ($todoname) {
+                            $list .= " (<b>$todoname</b>)\n";
+                        }
+                    }
+                } else {
+                    if ($todoname && $schedule_column) {
+                        $list .= " (<b>$todoname</b>, " . short_date($schedule_column) . ")\n";
+                    } else if ($schedule_column) {
+                        $list .= " (" . short_date($schedule_column) . ")\n";
+                    } else if ($todoname) {
+                        $list .= " (<b>$todoname</b>)\n";
+                    }
                 }
 
                 // Priority icon
@@ -1718,6 +1757,87 @@ function make_pdlist($staff, $id, $project, $projects, $project_ids,
     $list .= "</select>\n";
 
     return $list;
+}
+
+function find_mover($oldorderlist1, $neworderlist, &$mover, &$datepartner) {
+
+    // Find date borders in the new order
+    $borders = array();
+    $nborders = 0;
+    for ($i = 0; $i < count($neworderlist); $i++) {
+        if (substr($neworderlist[$i], 0, 1) == "A") {
+            $borders[$nborders] = $neworderlist[$i];
+            $nborders++;
+        }
+    }
+
+    // Fill in missing borders in old order
+    $oldorderlist = array();
+    $count = 0;
+    for ($i = 0; $i < count($oldorderlist1); $i++) {
+        $testborder = "A" . $oldorderlist1[$i];
+        if (in_array($testborder, $borders)) {
+            $oldorderlist[$count] = $testborder;
+            $count++;
+        }
+        $oldorderlist[$count] = $oldorderlist1[$i];
+        $count++;
+    }
+
+    // Find first change in lists, from front and back
+    for ($i = 0; $i < count($neworderlist); $i++) {
+        if ($neworderlist[$i] != $oldorderlist[$i]) {
+            $candidate1 = $neworderlist[$i];
+            $c1new = $i;
+            break;
+        }
+    }
+    for ($i = (count($neworderlist) - 1); $i >= 0; $i--) {
+        if ($neworderlist[$i] != $oldorderlist[$i]) {
+            $candidate2 = $neworderlist[$i];
+            $c2new = $i;
+            break;
+        }
+    }
+
+    // Find positions of candidates in old order
+    $c1old = array_search($neworderlist[$c1new], $oldorderlist);
+    $c2old = array_search($neworderlist[$c2new], $oldorderlist);
+
+    // The real moved item will have two different neighbors
+    if (($oldorderlist[$c1old - 1] != $neworderlist[$c1new - 1]) &&
+        ($oldorderlist[$c1old + 1] != $neworderlist[$c1new + 1])) {
+
+        // Candidate 1 is the mover
+        $mover = $candidate1;
+
+        // Find date partner
+        if (substr($neworderlist[$c1new - 1], 0, 1) == "A") {
+            $datepartner = $neworderlist[$c1new + 1];
+        } else if (substr($neworderlist[$c1new + 1], 0, 1) == "A") {
+            $datepartner = $neworderlist[$c1new - 1];
+        } else {
+            $datepartner = $neworderlist[$c1new + 1];
+        }
+
+    } else {
+
+        // Candidate 2 is the mover
+        $mover = $candidate2;
+
+        // Find date partner
+        if (substr($neworderlist[$c2new - 1], 0, 1) == "A") {
+            $datepartner = $neworderlist[$c2new + 1];
+        } else if (substr($neworderlist[$c2new + 1], 0, 1) == "A") {
+            $datepartner = $neworderlist[$c2new - 1];
+        } else {
+            $datepartner = $neworderlist[$c2new + 1];
+        }
+
+    }
+
+    return;
+
 }
 
 ?>

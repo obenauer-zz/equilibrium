@@ -140,12 +140,12 @@ switch($action) {
             
             // Button: Calendar Mode / List Mode (toggle)
             if ($calmode) {
-                printf("<td><form action='todolist.php' method='post'>\n");
+                printf("<td><form action='todolist.php' method='get'>\n");
                 printf("<input type='hidden' name='calmode' value='0'>\n");
                 printf("<input type='submit' value='Use List Mode'></form></td>\n");
                 printf("</tr></table>\n");
             } else {
-                printf("<td><form action='todolist.php' method='post'>\n");
+                printf("<td><form action='todolist.php' method='get'>\n");
                 printf("<input type='hidden' name='calmode' value='1'>\n");
                 printf("<input type='submit' value='Use Calendar Mode'></form></td>\n");
                 printf("</tr></table>\n");
