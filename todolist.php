@@ -142,11 +142,21 @@ switch($action) {
             if ($calmode) {
                 printf("<td><form action='todolist.php' method='get'>\n");
                 printf("<input type='hidden' name='calmode' value='0'>\n");
+                printf("<input type='hidden' name='staff' value='$staff'>\n");
+                printf("<input type='hidden' name='status' value='$status'>\n");
+                printf("<input type='hidden' name='todostatus' value='$todostatus'>\n");
+                printf("<input type='hidden' name='priority' value='$priority'>\n");
+                printf("<input type='hidden' name='maxresults' value='$maxresults'>\n");
                 printf("<input type='submit' value='Use List Mode'></form></td>\n");
                 printf("</tr></table>\n");
             } else {
                 printf("<td><form action='todolist.php' method='get'>\n");
                 printf("<input type='hidden' name='calmode' value='1'>\n");
+                printf("<input type='hidden' name='staff' value='$staff'>\n");
+                printf("<input type='hidden' name='status' value='$status'>\n");
+                printf("<input type='hidden' name='todostatus' value='$todostatus'>\n");
+                printf("<input type='hidden' name='priority' value='$priority'>\n");
+                printf("<input type='hidden' name='maxresults' value='$maxresults'>\n");
                 printf("<input type='submit' value='Use Calendar Mode'></form></td>\n");
                 printf("</tr></table>\n");
             }
