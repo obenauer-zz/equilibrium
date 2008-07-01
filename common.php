@@ -291,6 +291,7 @@ switch($cmd) {
         $new_todolist = build_todolist($staff, $status, $todostatus, $priority, 
             $calmode, $project, $duty, $pageflag, $dragonly, $page, $maxresults);
         printf($new_todolist);
+        exit;
         break;
 
     case "edititem";
@@ -528,6 +529,7 @@ switch($cmd) {
         $new_todolist = build_todolist($staff, $status, $todostatus, $priority, 
             $calmode, $project, $duty, $pageflag, $dragonly, $page, $maxresults);
         printf($new_todolist);
+        exit;
         break;
 
     case "togglecomplete_twolists";
@@ -558,6 +560,7 @@ switch($cmd) {
         $new_twolists = build_two_lists($staff, $status, $priority, $calmode,
             $project, $duty, $pageflag, $dragonly, $page, $maxresults);
         printf($new_twolists);
+        exit;
         break;
 
     // Delete comment
