@@ -1383,7 +1383,7 @@ function display_controls($fields, $values) {
             $dutystatus = $values[$i];
             //printf("<td>Duty Status: \n");
             printf("<td>Duties: \n");
-            printf("<select name='dutystatus' size='1' onChange='viewform.submit()'>\n");
+            printf("<select name='status' size='1' onChange='viewform.submit()'>\n");
             
             // Default status is Active
             if ($dutystatus == "") {
