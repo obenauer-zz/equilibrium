@@ -383,7 +383,7 @@ function display_project_form($action, $project, $errormsg, $params) {
 
     // Project description
     printf("<tr><td colspan='2'>Description</td>\n");
-    printf("<tr><td colspan='2'><textarea name='description' class='description' rows='6' cols='80'>" .
+    printf("<tr><td colspan='2'><textarea name='description' class='description' rows='6' cols='60'>" .
         "$description</textarea></td></tr>\n");
     
     printf("</table>\n");
@@ -440,7 +440,66 @@ function display_project_form($action, $project, $errormsg, $params) {
         }
     }
     
+    // Visibility
+    printf("<tr><td align='right'>Visibility: &nbsp; </td>");
+    printf("<td><select name='visibility' size='1'>\n");
+    if ($visibility == 'Private') {
+        printf("<option value='Public'>Public\n");
+        printf("<option value='Private' selected>Private\n");
+    } else {
+        printf("<option value='Public' selected>Public\n");
+        printf("<option value='Private'>Private\n");
+    }
+    
+    // Project status
+    $statuslist = array("Proposed", "Pending", "Active", "Suspended", "Aborted", "Completed");
+    printf("<tr><td align='right'>Status: &nbsp; </td>");
+    printf("<td><select name='status' size='1'>\n");
+    for ($i = 0; $i < count($statuslist); $i++) {
+        if ($status == $statuslist[$i]) {
+            printf("<option value='$statuslist[$i]' selected>$statuslist[$i]\n");
+        } else {
+            printf("<option value='$statuslist[$i]'>$statuslist[$i]\n");
+        }
+    }
+    printf("</select>\n");
+    //printf("<input type='hidden' name='contact' value=''>\n");  // Send dummy contact
+    printf("</td></tr>\n");
+
+    // Contact person (REMOVED 7/2/2008)
+    //printf("<tr><td align='right'>Contact: &nbsp; </td>");
+    //printf("<td><input type='text' name='contact' size='20' value='$contact'></td></tr>\n");
+
+    // Only show date forms when editing projects
+    if ($action == "edit") {
+
+        // Date entered
+        printf("<tr><td align='right'>Date entered:</td><td>\n");
+        show_date_form('enterdate', $enterdate);
+        printf("</td></tr>\n");
+        
+        // Date started
+        printf("<tr><td align='right'>Date started:</td><td>\n");
+        show_date_form('startdate', $startdate);
+        printf("</td></tr>\n");
+        
+        // Date completed
+        printf("<tr><td align='right'>Date completed:</td><td>\n");
+        show_date_form('completedate', $completedate);
+        printf("</td></tr>\n");
+
+        printf("</table>\n");
+    
+    }
+    
+    // Select Existing Client or New Client
+    printf("<font id='eclientlabel' onclick='clientflag = \"Existing\"; ");
+    printf("show_eclient_form();' style='font-weight: bold'>Existing Client</font> / ");
+    printf("<font id='nclientlabel' onclick='clientflag = \"New\"; ");
+    printf("show_nclient_form();' style='font-weight: normal'>New Client</font>");
+
     // Client
+    printf("<div>\n");
     printf("<tr><td align='right'>Client: &nbsp; </td>");
     printf("<td><select name='client' size='1'>\n");
     printf("<option value='0' selected>\n");
@@ -474,55 +533,26 @@ function display_project_form($action, $project, $errormsg, $params) {
     
     printf("</select></td></tr>\n");
     
-    // Contact person
-    printf("<tr><td align='right'>Contact: &nbsp; </td>");
-    printf("<td><input type='text' name='contact' size='20' value='$contact'></td></tr>\n");
-
-    // Visibility
-    printf("<tr><td align='right'>Visibility: &nbsp; </td>");
-    printf("<td><select name='visibility' size='1'>\n");
-    if ($visibility == 'Private') {
-        printf("<option value='Public'>Public\n");
-        printf("<option value='Private' selected>Private\n");
-    } else {
-        printf("<option value='Public' selected>Public\n");
-        printf("<option value='Private'>Private\n");
-    }
-    
-    // Only show date forms when editing projects
-    if ($action == "edit") {
-
-        // Date entered
-        printf("<tr><td align='right'>Date entered:</td><td>\n");
-        show_date_form('enterdate', $enterdate);
-        printf("</td></tr>\n");
-        
-        // Date started
-        printf("<tr><td align='right'>Date started:</td><td>\n");
-        show_date_form('startdate', $startdate);
-        printf("</td></tr>\n");
-        
-        // Date completed
-        printf("<tr><td align='right'>Date completed:</td><td>\n");
-        show_date_form('completedate', $completedate);
-        printf("</td></tr>\n");
-    
-    }
-    
-    // Project status
-    $statuslist = array("Proposed", "Pending", "Active", "Suspended", "Aborted", "Completed");
-    printf("<tr><td align='right'>Status: &nbsp; </td>");
-    printf("<td><select name='status' size='1'>\n");
-    for ($i = 0; $i < count($statuslist); $i++) {
-        if ($status == $statuslist[$i]) {
-            printf("<option value='$statuslist[$i]' selected>$statuslist[$i]\n");
-        } else {
-            printf("<option value='$statuslist[$i]'>$statuslist[$i]\n");
-        }
-    }
-    printf("</select></td></tr>\n");
-
     printf("</table>\n");
+
+
+    // Test:  HTML combo box
+    printf("<input type='text' id='combotext' size='20' style='width:200'>\n");
+    printf("<input type='button' hidefocus='1' value='&#9660;' ");
+    printf("style='height:23; width:22; font-family: helvetica;' ");
+    printf("onclick=\"JavaScript:menuActivate('combotext', 'combodiv', 'combosel')\">\n");
+    printf("<div id='combodiv' style='position:absolute; display:none; top:0px; ");
+    printf("left:0px; z-index:10000' onmouseover=\"javascript:oOverMenu='combodiv';\" ");
+    printf("onmouseout=\"javascript:oOverMenu=false;\">\n");
+    printf("<select size='10' id='combosel' style='width: 220; border-style: none' ");
+    printf("onclick=\"JavaScript:textSet('combotext',this.value);\" ");
+    printf("onkeypress=\"JavaScript:comboKey('combotext', this);\">\n");
+    printf("<option value='ARGENTINA'>ARGENTINA</option>\n");
+    printf("<option value='BRAZIL'>BRAZIL</option>\n");
+    printf("<option value='CHINA'>CHINA</option>\n");
+    printf("<option value='DENMARK'>DENMARK</option>\n");
+    printf("</select></div>\n");
+    printf("");
 
     // Print validation error message, if any
     if ($errormsg) {

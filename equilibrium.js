@@ -20,6 +20,11 @@ var xmlHttp = createXmlHttpRequestObject();
 var cache = new Array();
 var showErrors = true;
 
+// Initialize combo box
+var fActiveMenu = false;
+var oOverMenu = false;
+document.onmousedown = mouseSelect;
+
 // Create an XMLHttpRequest instance
 function createXmlHttpRequestObject() {
     var xmlHttp;
@@ -681,3 +686,76 @@ function populate_duties(pdlist, plabel, dlabel, duty_ids, duties, duty) {
     return;
 }
 
+function show_eclient_form() {
+
+    // Make "Existing Client" label bold and "New Client" label normal
+    document.getElementById("eclientlabel").setAttribute("style", "font-weight: bold");
+    document.getElementById("nclientlabel").setAttribute("style", "font-weight: normal");
+
+    return;
+}
+
+function show_nclient_form() {
+
+    // Make "New Client" label bold and "Existing Client" label normal
+    document.getElementById("eclientlabel").setAttribute("style", "font-weight: normal");
+    document.getElementById("nclientlabel").setAttribute("style", "font-weight: bold");
+
+    return;
+}
+
+// I'd like to acknowledge Viktor Toth's help for showing me how 
+// to make a combo box in HTML.  His website is http://vttoth.com, 
+// and his email is vttoth@vttoth.com.  The functions below 
+// (mouseSelect, menuActivate, textSet, and comboKey) 
+// are used to make the combo box work.
+
+function mouseSelect(e) {
+
+    if (fActiveMenu) {
+        if (oOverMenu == false) {
+            oOverMenu = false;
+            document.getElementById(fActiveMenu).style.display = "none";
+            fActiveMenu = false;
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function menuActivate(idEdit, idMenu, idSel) {
+    if (fActiveMenu) return mouseSelect(0);
+
+    oMenu = document.getElementById(idMenu);
+    oEdit = document.getElementById(idEdit);
+    nTop = oEdit.offsetTop + oEdit.offsetHeight;
+    nLeft = oEdit.offsetLeft;
+    while (oEdit.offsetParent != document.body) {
+        oEdit = oEdit.offsetParent;
+        nTop += oEdit.offsetTop;
+        nLeft += oEdit.offsetLeft;
+    }
+    oMenu.style.left = nLeft;
+    oMenu.style.top = nTop;
+    oMenu.style.display = "";
+    fActiveMenu = idMenu;
+    document.getElementById(idSel).focus();
+    return false;
+}
+
+function textSet(idEdit, text) {
+    document.getElementById(idEdit).value = text;
+    oOverMenu = false;
+    mouseSelect(0);
+    document.getElementById(idEdit).focus();
+}
+
+function comboKey(idEdit, idSel) {
+    if (window.event.keyCode == 13 || window.event.keyCode == 32)
+        textSet(idEdit, idSel.value);
+    else if (window.event.keyCode == 27) {
+        mouseSelect(0);
+        document.getElementById(idEdit).focus();
+    }
+}
