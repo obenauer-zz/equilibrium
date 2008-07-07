@@ -365,11 +365,13 @@ function build_todolist($staff, $status, $todostatus, $priority, $calmode,
             // Draw lines between to-do's with different schedule dates
             // (in Calendar Mode)
             if ($calmode) {
+
                 if (($lastscheduledate == "") && ($pastscheduledate)) {
                     $list .= "<div id='A" . $row['todo_id'] . "'>";
                     $list .= "<font color='blue' size='-1'><b>" .
                         "Overdue</b></font><br clear=left></div>\n";
-                } else if ($row['schedule_date'] != $lastscheduledate) {
+                } else if (($row['schedule_date'] != $lastscheduledate) 
+                    && (!$pastscheduledate)) {
                     $list .= "<div id='A" . $row['todo_id'] . "'>";
                     if ($row['schedule_date']) {
                         $list .= "<font color='blue' size='-1'><b>" .
