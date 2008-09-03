@@ -237,12 +237,6 @@ if (isset($_REQUEST['departmenttext'])) {
     $departmenttext = "";
 }
 
-if (isset($_REQUEST['departmentsel'])) {
-    $departmentsel = $_REQUEST['departmentsel'];
-} else {
-    $departmentsel = 0;
-}
-
 // Declare PHP functions
 require("equilibrium.php");
 
@@ -556,7 +550,7 @@ function display_project_form($action, $project, $errormsg, $params) {
     printf("<tr><td>Email: &nbsp; </td><td><input type='text' name='email' value='' size='20'></td></tr>\n");
     printf("<tr><td>$client_organization_label: &nbsp; </td><td>");
 
-    // Test:  HTML combo box
+    // Department combo box
     printf("<input type='text' id='departmenttext' name='departmenttext' size='17' style='width: 160'>\n");
     printf("<input type='button' hidefocus='1' value='&#9660;' ");
     printf("style='height:23; width:22; font-family: helvetica;' ");
@@ -581,46 +575,9 @@ function display_project_form($action, $project, $errormsg, $params) {
     mysql_close($conn);
     printf("</select></div>\n");
     printf("</td></tr>\n");
-    printf("");
-
 
     printf("</table>\n");
     printf("</div></td></tr>\n");
-
-
-/*    // Client
-    printf("<tr><td align='right'>Client: &nbsp; </td>");
-    printf("<td><select name='client' size='1'>\n");
-    printf("<option value='0' selected>\n");
-    
-    $conn = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD) 
-        or die ("Cannot connect to database. " . mysql_error() . "\n<br>");
-    mysql_select_db(DB_DATABASE);
-
-    // First list faculty members the logged-in user has worked for before
-    $get_past_clients = mysql_query("select h.client_id, count(*) as countval, c.first_name, c.last_name " .
-        "from client_history as h, clients as c where h.client_id = c.client_id " .
-        "and h.staff_id = \"" . $_SESSION['SESSION_USERID'] . "\" group by h.client_id order by countval desc ");
-    while ($row = mysql_fetch_array($get_past_clients)) {
-        printf("<option value='$row[0]' style='background-color: %s;'>$row[2] $row[3]\n", $heading_color);
-    }
-    mysql_free_result($get_past_clients);
-    printf("<option value='0'>-----------------------\n");
-
-    // Now list all faculty members
-    $get_clients = mysql_query("select client_id, first_name, last_name from clients " .
-        "order by last_name, first_name ");
-    while ($row = mysql_fetch_array($get_clients)) {
-        if ($client == $row[0]) {
-            printf("<option value='$row[0]' selected>$row[1] $row[2]\n");
-        } else {
-            printf("<option value='$row[0]'>$row[1] $row[2]\n");
-        }
-    }
-    mysql_free_result($get_clients);
-    mysql_close($conn);
-    
-    printf("</select></td></tr>\n");*/
     
     // Only show date forms when editing projects
     if ($action == "edit") {

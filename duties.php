@@ -217,6 +217,30 @@ if (isset($_REQUEST['calmode'])) {
     $calmode = 0;
 }
 
+if (isset($_REQUEST['firstname'])) {
+    $firstname = $_REQUEST['firstname'];
+} else {
+    $firstname = "";
+}
+
+if (isset($_REQUEST['lastname'])) {
+    $lastname = $_REQUEST['lastname'];
+} else {
+    $lastname = "";
+}
+
+if (isset($_REQUEST['email'])) {
+    $email = $_REQUEST['email'];
+} else {
+    $email = "";
+}
+
+if (isset($_REQUEST['departmenttext'])) {
+    $departmenttext = $_REQUEST['departmenttext'];
+} else {
+    $departmenttext = "";
+}
+
 // Declare PHP functions
 require("equilibrium.php");
 
@@ -225,6 +249,8 @@ function display_duty_form($action, $duty, $errormsg, $params) {
     require_once("config.php");
     global $background_color;
     global $heading_color;
+    global $display_client_contact;
+    global $client_organization_label;
 
     // Only the assigned staff or administrators can edit this duty, unless it's not assigned
     if (($_SESSION['SESSION_ADMIN'] == "Y") || ($staff == $_SESSION['SESSION_USERID']) 
@@ -245,6 +271,10 @@ function display_duty_form($action, $duty, $errormsg, $params) {
         $enterdate = $params['enterdate'];
         $visibility = $params['visibility'];
         $status = $params['status'];
+        $firstname = $params['firstname'];
+        $lastname = $params['lastname'];
+        $email = $params['email'];
+        $departmenttext = $params['departmenttext'];
 
         if ($enterdate == "0000-00-00") {
             $enterdate = "";
@@ -370,7 +400,7 @@ function display_duty_form($action, $duty, $errormsg, $params) {
 
     // Duty description
     printf("<tr><td colspan='2'>Description</td>\n");
-    printf("<tr><td colspan='2'><textarea name='description' class='description' rows='6' cols='80'>" .
+    printf("<tr><td colspan='2'><textarea name='description' class='description' rows='6' cols='60'>" .
         "$description</textarea></td></tr>\n");
     
     printf("</table>\n");
@@ -427,9 +457,45 @@ function display_duty_form($action, $duty, $errormsg, $params) {
         }
     }
     
-    // Client PI
-    printf("<tr><td align='right'>Client PI: &nbsp; </td>");
-    printf("<td><select name='client' size='1'>\n");
+    // Visibility
+    printf("<tr><td align='right'>Visibility: &nbsp; </td>");
+    printf("<td><select name='visibility' size='1'>\n");
+    if ($visibility == 'Private') {
+        printf("<option value='Public'>Public\n");
+        printf("<option value='Private' selected>Private\n");
+    } else {
+        printf("<option value='Public' selected>Public\n");
+        printf("<option value='Private'>Private\n");
+    }
+    
+    // Duty status
+    $statuslist = array("Active", "Inactive");
+    printf("<tr><td align='right'>Status: &nbsp; </td>");
+    printf("<td><select name='status' size='1'>\n");
+    for ($i = 0; $i < count($statuslist); $i++) {
+        if ($status == $statuslist[$i]) {
+            printf("<option value='$statuslist[$i]' selected>$statuslist[$i]\n");
+        } else {
+            printf("<option value='$statuslist[$i]'>$statuslist[$i]\n");
+        }
+    }
+    printf("</select></td></tr>\n");
+
+    // Contact person
+    if ($display_client_contact == "Y") {
+        printf("<tr><td align='right'>Contact: &nbsp; </td>");
+        printf("<td><input type='text' name='contact' size='20' value='$contact'></td></tr>\n");
+    }
+
+    // Existing client / New client selection
+    printf("<tr><td colspan='2' align='center'><font id='exclabel' onclick='clientflag " .
+        "= \"Existing Client\"; toggle_client_div(clientflag);' style='font-weight: bold'>");
+    printf("Existing Client</font> / ");
+    printf("<font id='newclabel' onclick='clientflag = \"New Client\"; toggle_client_div(clientflag);' style='font-weight: normal' >New Client</font></td></tr>\n");
+
+    // Existing client form
+    printf("<tr><td colspan='2'><div id='exc_div'>\n");
+    printf("Client: &nbsp; <select name='client' size='1'>\n");
     printf("<option value='0' selected>\n");
     
     $conn = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD) 
@@ -459,12 +525,47 @@ function display_duty_form($action, $duty, $errormsg, $params) {
     mysql_free_result($get_clients);
     mysql_close($conn);
     
-    printf("</select></td></tr>\n");
-    
-    // Contact person
-    printf("<tr><td align='right'>Contact: &nbsp; </td>");
-    printf("<td><input type='text' name='contact' size='20' value='$contact'></td></tr>\n");
+    printf("</select><br>\n");
 
+    printf("</div>\n");
+
+    // New client form
+    printf("<div id='newc_div' style='display:none'>\n");
+    printf("<table>\n");
+    printf("<tr><td>First Name: &nbsp; </td><td><input type='text' name='firstname' value='' size='20'></td></tr>\n");
+    printf("<tr><td>Last Name: &nbsp; </td><td><input type='text' name='lastname' value='' size='20'></td></tr>\n");
+    printf("<tr><td>Email: &nbsp; </td><td><input type='text' name='email' value='' size='20'></td></tr>\n");
+    printf("<tr><td>$client_organization_label: &nbsp; </td><td>");
+
+    // Department combo box
+    printf("<input type='text' id='departmenttext' name='departmenttext' size='17' style='width: 160'>\n");
+    printf("<input type='button' hidefocus='1' value='&#9660;' ");
+    printf("style='height:23; width:22; font-family: helvetica;' ");
+    printf("onclick=\"JavaScript:menuActivate('departmenttext', 'combodiv', 'combosel')\">\n");
+    printf("<div id='combodiv' style='position:absolute; display:none; top:0px; ");
+    printf("left:0px; z-index:10000' onmouseover=\"javascript:oOverMenu='combodiv';\" ");
+    printf("onmouseout=\"javascript:oOverMenu=false;\">\n");
+    printf("<select size='10' id='departmentsel' style='width: 160; border-style: none' ");
+    printf("onclick=\"JavaScript:textSet('departmenttext',this.options[selectedIndex].text);\" ");
+    printf("onkeypress=\"JavaScript:comboKey('departmenttext', this);\">\n");
+
+    // List all departments
+    $conn = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD) 
+        or die ("Cannot connect to database. " . mysql_error() . "\n<br>");
+    mysql_select_db(DB_DATABASE);
+    $get_depts = mysql_query("select department_id, name from departments " .
+        "order by name asc ");
+    while ($row = mysql_fetch_array($get_depts)) {
+        printf("<option value='$row[0]'>$row[1]</option>\n");
+    }
+    mysql_free_result($get_depts);
+    mysql_close($conn);
+    printf("</select></div>\n");
+    printf("</td></tr>\n");
+
+    printf("</table>\n");
+    printf("</div></td></tr>\n");
+    
     // Only show date forms when editing projects
     if ($action == "edit") {
 
@@ -475,30 +576,6 @@ function display_duty_form($action, $duty, $errormsg, $params) {
         
     }
     
-    // Visibility
-    printf("<tr><td align='right'>Visibility: &nbsp; </td>");
-    printf("<td><select name='visibility' size='1'>\n");
-    if ($visibility == 'Private') {
-        printf("<option value='Public'>Public\n");
-        printf("<option value='Private' selected>Private\n");
-    } else {
-        printf("<option value='Public' selected>Public\n");
-        printf("<option value='Private'>Private\n");
-    }
-    
-    // Duty status
-    $statuslist = array("Active", "Inactive");
-    printf("<tr><td align='right'>Status: &nbsp; </td>");
-    printf("<td><select name='status' size='1'>\n");
-    for ($i = 0; $i < count($statuslist); $i++) {
-        if ($status == $statuslist[$i]) {
-            printf("<option value='$statuslist[$i]' selected>$statuslist[$i]\n");
-        } else {
-            printf("<option value='$statuslist[$i]'>$statuslist[$i]\n");
-        }
-    }
-    printf("</select></td></tr>\n");
-
     printf("</table>\n");
 
     // Print validation error message, if any
@@ -745,6 +822,10 @@ switch($cmd) {
                 $params['enterdate'] = $enterdate;
                 $params['visibility'] = $visibility;
                 $params['status'] = $status;
+                $params['firstname'] = $firstname;
+                $params['lastname'] = $lastname;
+                $params['email'] = $email;
+                $params['departmenttext'] = $departmenttext;
                 display_duty_form("add", 0, "$errormsg", $params);
             } else {
                 printf("<h3>Add New Duty -- Not Authorized</h3>");
@@ -814,6 +895,59 @@ switch($cmd) {
             }
             if (!$foundzero) {
                 $icon = $defaulticon;  // If no zero-used icons found, pick least-used one
+            }
+
+            // Was a new client entered?
+            if (($firstname) || ($lastname)) {
+                $new_client_flag = 1;
+                $dept_id = 0;
+                $client = 0;
+
+                // Check if a new client department was specified
+                $departmenttext = trim($departmenttext);
+                //printf("departmenttext = $departmenttext<br>\n");
+                if ($departmenttext) {
+    
+                    // Get list of departments
+                    $department_ids = array();
+                    $conn = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD) 
+                        or die ("Cannot connect to database. " . mysql_error() . "\n<br>");
+                    mysql_select_db (DB_DATABASE);
+                    $get_depts = mysql_query("select department_id, name from departments order by name asc ");
+                    while ($row = mysql_fetch_array($get_depts, MYSQL_ASSOC)) {
+                        $department_ids[strtoupper($row['name'])] = $row['department_id'];
+                    }
+                    mysql_close($conn);
+        
+                    // Is this department already in the database?
+                    if ($department_ids[strtoupper($departmenttext)]) {
+                        // Yes, it is
+                        $dept_id = $department_ids[strtoupper($departmenttext)];
+                        //printf("Known: dept_id = $dept_id<br>\n");
+                    } else {
+                        // No; add it
+                        $conn = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD) 
+                            or die ("Cannot connect to database. " . mysql_error() . "\n<br>");
+                        mysql_select_db (DB_DATABASE);
+                        $get_depts = mysql_query("insert into departments (name) values (\"$departmenttext\" ) ");
+                        $dept_id = mysql_insert_id($conn);
+                        //printf("New: dept_id = $dept_id<br>\n");
+                        mysql_close($conn);
+                    }
+        
+                }
+
+                // Add client to database
+                $conn = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD) 
+                    or die ("Cannot connect to database. " . mysql_error() . "\n<br>");
+                mysql_select_db (DB_DATABASE);
+                if ($dept_id) {
+                    $get_depts = mysql_query("insert into clients (first_name, last_name, email, department_id) values (\"$firstname\", \"$lastname\", \"$email\", \"$dept_id\")  ");
+                } else {
+                    $get_depts = mysql_query("insert into clients (first_name, last_name, email) values (\"$firstname\", \"$lastname\", \"$email\" ) ");
+                }
+                $client = mysql_insert_id($conn);
+
             }
 
             // Add new duty to database
@@ -887,6 +1021,10 @@ switch($cmd) {
                 $params['enterdate'] = $enterdate;
                 $params['visibility'] = $visibility;
                 $params['status'] = $status;
+                $params['firstname'] = $firstname;
+                $params['lastname'] = $lastname;
+                $params['email'] = $email;
+                $params['departmenttext'] = $departmenttext;
                 display_duty_form("edit", $duty, "$errormsg", $params);
             } else {
                 printf("<h3>Edit Duty -- Not Authorized</h3>");
@@ -907,6 +1045,59 @@ switch($cmd) {
             $title = mysql_real_escape_string($title);
             $description = mysql_real_escape_string($description);
             $start_trans = mysql_query("start transaction ");
+
+            // Was a new client entered?
+            if (($firstname) || ($lastname)) {
+                $new_client_flag = 1;
+                $dept_id = 0;
+                $client = 0;
+
+                // Check if a new client department was specified
+                $departmenttext = trim($departmenttext);
+                //printf("departmenttext = $departmenttext<br>\n");
+                if ($departmenttext) {
+    
+                    // Get list of departments
+                    $department_ids = array();
+                    $conn = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD) 
+                        or die ("Cannot connect to database. " . mysql_error() . "\n<br>");
+                    mysql_select_db (DB_DATABASE);
+                    $get_depts = mysql_query("select department_id, name from departments order by name asc ");
+                    while ($row = mysql_fetch_array($get_depts, MYSQL_ASSOC)) {
+                        $department_ids[strtoupper($row['name'])] = $row['department_id'];
+                    }
+                    mysql_close($conn);
+        
+                    // Is this department already in the database?
+                    if ($department_ids[strtoupper($departmenttext)]) {
+                        // Yes, it is
+                        $dept_id = $department_ids[strtoupper($departmenttext)];
+                        //printf("Known: dept_id = $dept_id<br>\n");
+                    } else {
+                        // No; add it
+                        $conn = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD) 
+                            or die ("Cannot connect to database. " . mysql_error() . "\n<br>");
+                        mysql_select_db (DB_DATABASE);
+                        $get_depts = mysql_query("insert into departments (name) values (\"$departmenttext\" ) ");
+                        $dept_id = mysql_insert_id($conn);
+                        //printf("New: dept_id = $dept_id<br>\n");
+                        mysql_close($conn);
+                    }
+        
+                }
+
+                // Add client to database
+                $conn = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD) 
+                    or die ("Cannot connect to database. " . mysql_error() . "\n<br>");
+                mysql_select_db (DB_DATABASE);
+                if ($dept_id) {
+                    $get_depts = mysql_query("insert into clients (first_name, last_name, email, department_id) values (\"$firstname\", \"$lastname\", \"$email\", \"$dept_id\")  ");
+                } else {
+                    $get_depts = mysql_query("insert into clients (first_name, last_name, email) values (\"$firstname\", \"$lastname\", \"$email\" ) ");
+                }
+                $client = mysql_insert_id($conn);
+
+            }
 
             // Convert date formats to MySQL
             $enterdate = mysql_date($enterdate);
