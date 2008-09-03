@@ -1110,9 +1110,22 @@ switch($cmd) {
             printf("<h2>Edit Project</h2>\n");
     
             if (($_SESSION['SESSION_ADMIN'] == "Y") || ($_SESSION['SESSION_STAFF'] == "Y")) {
-                $params = array($title, $ptype, $description, $staff, $client, $contact, 
-                    $visibility, $status, $enterdate, $startdate, $completedate);
-                //$params = "";
+                $params = array();
+                $params['title'] = $title;
+                $params['ptype'] = $ptype;
+                $params['description'] = $description;
+                $params['staff'] = $staff;
+                $params['client'] = $client;
+                $params['contact'] = $contact;
+                $params['visibility'] = $visibility;
+                $params['status'] = $status;
+                $params['enterdate'] = $enterdate;
+                $params['startdate'] = $startdate;
+                $params['completedate'] = $completedate;
+                $params['firstname'] = $firstname;
+                $params['lastname'] = $lastname;
+                $params['email'] = $email;
+                $params['departmenttext'] = $departmenttext;
                 display_project_form("edit", $project, $errormsg, $params);
             } else {
                 printf("<h3>Edit Project -- Not Authorized</h3>");
@@ -1133,6 +1146,59 @@ switch($cmd) {
             $title = mysql_real_escape_string($title);
             $description = mysql_real_escape_string($description);
             $start_trans = mysql_query("start transaction ");
+
+            // Was a new client entered?
+            if (($firstname) || ($lastname)) {
+                $new_client_flag = 1;
+                $dept_id = 0;
+                $client = 0;
+
+                // Check if a new client department was specified
+                $departmenttext = trim($departmenttext);
+                //printf("departmenttext = $departmenttext<br>\n");
+                if ($departmenttext) {
+    
+                    // Get list of departments
+                    $department_ids = array();
+                    $conn = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD) 
+                        or die ("Cannot connect to database. " . mysql_error() . "\n<br>");
+                    mysql_select_db (DB_DATABASE);
+                    $get_depts = mysql_query("select department_id, name from departments order by name asc ");
+                    while ($row = mysql_fetch_array($get_depts, MYSQL_ASSOC)) {
+                        $department_ids[strtoupper($row['name'])] = $row['department_id'];
+                    }
+                    mysql_close($conn);
+        
+                    // Is this department already in the database?
+                    if ($department_ids[strtoupper($departmenttext)]) {
+                        // Yes, it is
+                        $dept_id = $department_ids[strtoupper($departmenttext)];
+                        //printf("Known: dept_id = $dept_id<br>\n");
+                    } else {
+                        // No; add it
+                        $conn = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD) 
+                            or die ("Cannot connect to database. " . mysql_error() . "\n<br>");
+                        mysql_select_db (DB_DATABASE);
+                        $get_depts = mysql_query("insert into departments (name) values (\"$departmenttext\" ) ");
+                        $dept_id = mysql_insert_id($conn);
+                        //printf("New: dept_id = $dept_id<br>\n");
+                        mysql_close($conn);
+                    }
+        
+                }
+
+                // Add client to database
+                $conn = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD) 
+                    or die ("Cannot connect to database. " . mysql_error() . "\n<br>");
+                mysql_select_db (DB_DATABASE);
+                if ($dept_id) {
+                    $get_depts = mysql_query("insert into clients (first_name, last_name, email, department_id) values (\"$firstname\", \"$lastname\", \"$email\", \"$dept_id\")  ");
+                } else {
+                    $get_depts = mysql_query("insert into clients (first_name, last_name, email) values (\"$firstname\", \"$lastname\", \"$email\" ) ");
+                }
+                $client = mysql_insert_id($conn);
+
+            }
 
             // Convert date formats to MySQL
             $enterdate = mysql_date($enterdate);
