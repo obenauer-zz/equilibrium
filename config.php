@@ -29,6 +29,8 @@ $admin_email = "joe.sysadmin@company.com";
 $main_page = "todolist.php";
 $upload_dir = "datafiles";
 $number_icons = 35712;
+$client_organization_label = "Department";
+$display_client_contact = "N";
 
 # LDAP connection
 $use_ldap = "N";
