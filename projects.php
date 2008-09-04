@@ -1829,7 +1829,7 @@ switch($action) {
         
             if ($status == "All") {
             
-                $query = "select p.project_id, p.title, p.description, " .
+                $query = "select distinct p.project_id, p.title, p.description, " .
                     "c.last_name as clientname, u.first_name, u.last_name, p.date_entered, p.status, p.visibility, " .
                     "p.icon_id from projects as p " .
                     "left join clients as c on p.client_id = c.client_id " .
@@ -1840,7 +1840,7 @@ switch($action) {
 
             } else if ($status == "Open") {
 
-                $query = "select p.project_id, p.title, p.description, " .
+                $query = "select distinct p.project_id, p.title, p.description, " .
                     "c.last_name as clientname, u.first_name, u.last_name, p.date_entered, p.status, p.visibility, " .
                     "p.icon_id from projects as p " .
                     "left join clients as c on p.client_id = c.client_id " .
@@ -1852,7 +1852,7 @@ switch($action) {
 
             } else {
             
-                $query = "select p.project_id, p.title, p.description, " .
+                $query = "select distinct p.project_id, p.title, p.description, " .
                     "c.last_name as clientname, u.first_name, u.last_name, p.date_entered, p.status, p.visibility, " .
                     "p.icon_id from projects as p " .
                     "left join clients as c on p.client_id = c.client_id " .

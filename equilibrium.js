@@ -146,11 +146,13 @@ function modify_todo(content, action, staff, status, todostatus,
             var pdflag = pdlist.substring(0, 1);
             if (pdflag == "P") {
                 pdflag = "Project";
+                //var pdchange = project; // ?
             } else if (pdflag == "D") {
                 pdflag = "Duty";
+                //var pdchange = duty; // ?
             }
             var pdchange = pdlist.substring(1);
-            //alert("pdchange = " + pdchange);
+            //alert("pdlist = " + pdlist.value);
             var staffchange = $('staff_assigned_' + content).value;
             var visibility = $('visibility_' + content).value;
             var scheduledate = $('schedule_' + content).value;

@@ -78,7 +78,7 @@ function build_todolist($staff, $status, $todostatus, $priority, $calmode,
         // Query conditions for Duties page
         $statusclause = "and t.duty_id = \"$duty\" ";
 
-        //$staffclause = "";        
+        $staffclause = "";        
     
         if ($todostatus == "Pending") {
             $orderclause = "order by t.priority, t.duty_order asc ";
@@ -90,7 +90,7 @@ function build_todolist($staff, $status, $todostatus, $priority, $calmode,
         // Query conditions for Projects page
         $statusclause = "and t.project_id = \"$project\" ";
         
-        //$staffclause = "";        
+        $staffclause = "";        
                 
         if ($todostatus == "Pending") {
             $orderclause = "order by t.priority, t.project_order asc ";

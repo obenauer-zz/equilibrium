@@ -1678,7 +1678,7 @@ switch($action) {
         
             if ($status == "All") {
             
-                $query = "select d.duty_id, d.title, d.description, " .
+                $query = "select distinct d.duty_id, d.title, d.description, " .
                     "c.last_name as clientname, u.first_name, u.last_name, d.date_entered, d.status, " .
                     "d.icon_id from duties as d " .
                     "left join clients as c on d.client_id = c.client_id " .
@@ -1689,7 +1689,7 @@ switch($action) {
 
             } else if ($status == "Open") {
 
-                $query = "select d.duty_id, d.title, d.description, " .
+                $query = "select distinct d.duty_id, d.title, d.description, " .
                     "c.last_name as clientname, u.first_name, u.last_name, d.date_entered, d.status, " .
                     "d.icon_id from duties as d " .
                     "left join clients as c on d.client_id = c.client_id " .
@@ -1701,7 +1701,7 @@ switch($action) {
 
             } else {
             
-                $query = "select d.duty_id, d.title, d.description, " .
+                $query = "select distinct d.duty_id, d.title, d.description, " .
                     "c.last_name as clientname, u.first_name, u.last_name, d.date_entered, d.status, " .
                     "d.icon_id from duties as d " .
                     "left join clients as c on d.client_id = c.client_id " .
