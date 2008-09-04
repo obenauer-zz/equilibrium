@@ -237,6 +237,12 @@ if (isset($_REQUEST['departmenttext'])) {
     $departmenttext = "";
 }
 
+if (isset($_REQUEST['assistants'])) {
+    $assistants = $_REQUEST['assistants'];
+} else {
+    $assistants = "";
+}
+
 // Declare PHP functions
 require("equilibrium.php");
 
@@ -273,6 +279,7 @@ function display_project_form($action, $project, $errormsg, $params) {
         $lastname = $params['lastname'];
         $email = $params['email'];
         $departmenttext = $params['departmenttext'];
+        $assistants = $params['assistants'];
         
         printf("completedate = $completedate<br>\n");
 
@@ -331,7 +338,7 @@ function display_project_form($action, $project, $errormsg, $params) {
                 "left join users as u on p.staff_assigned = u.user_id " .
                 "left join clients as c on p.client_id = c.client_id " .
                 "where p.project_id = \"$project\" ");
-            if ($row = mysql_fetch_array($get_fields)) {
+            if ($row = mysql_fetch_array($get_fields, MYSQL_ASSOC)) {
                 $title = $row['title'];
                 $ptype = $row['project_type_id'];
                 $description = $row['description'];
@@ -348,6 +355,15 @@ function display_project_form($action, $project, $errormsg, $params) {
                 printf("Error: unable to retrieve this project from database.<br>\n");
             }
             mysql_free_result($get_fields);
+
+            // Get list of assistants, if any
+            $assistants = array();
+            $get_assistants = mysql_query("select staff_id from assistants " .
+                "where project_id = \"$project\" ");
+            while ($row = mysql_fetch_array($get_assistants, MYSQL_ASSOC)) {
+                array_push($assistants, $row['staff_id']);
+            }
+            mysql_free_result($get_assistants);
             mysql_close($conn);
         
         }
@@ -469,6 +485,43 @@ function display_project_form($action, $project, $errormsg, $params) {
 
         }
     }
+    
+    // Assisting staff
+    printf("<tr><td align='right'>Assisting: &nbsp; </td>");
+
+    // Only administrators can assign projects to other people
+    printf("<td><select name='assistants[]' size='4' multiple>\n");
+
+    $conn = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD) 
+        or die ("Cannot connect to database. " . mysql_error() . "\n<br>");
+    mysql_select_db(DB_DATABASE);
+    $get_staff = mysql_query("select user_id, first_name, last_name from users " .
+        "where staff_flag = \"Y\" order by last_name ");
+    if (isset($assistants)) {
+        printf("<option value='0'>(None)\n");
+    } else {
+        printf("<option value='0' selected>(None)\n");
+    }
+    $selectedstaff = 0;
+    while ($row = mysql_fetch_array($get_staff)) {
+        if (isset($assistants)) {
+            foreach ($assistants as $s) {
+                if ($s == $row[0]) {
+                    $selectedstaff = 1;
+                    break;
+                }
+            }
+        }
+        if ($selectedstaff) {
+            printf("<option value='$row[0]' selected>$row[1] $row[2]\n");
+        } else {
+            printf("<option value='$row[0]'>$row[1] $row[2]\n");
+        }      
+        $selectedstaff = 0;      
+    }
+    mysql_free_result($get_staff);
+    mysql_close($conn);
+    printf("</select></td></tr>\n");
     
     // Visibility
     printf("<tr><td align='right'>Visibility: &nbsp; </td>");
@@ -671,6 +724,15 @@ function display_project_details($project) {
         printf("Error: unable to retrieve this project from database.<br>\n");
     }
     mysql_free_result($get_fields);
+
+    // Get list of assistants, if any
+    $assistants = array();
+    $get_assistants = mysql_query("select staff_id from assistants " .
+        "where project_id = \"$project\" ");
+    while ($row = mysql_fetch_array($get_assistants, MYSQL_ASSOC)) {
+        array_push($assistants, $row['staff_id']);
+    }
+    mysql_free_result($get_assistants);
     mysql_close($conn);
 
     // Only the assigned staff or administrators can edit this project, unless it's not assigned
@@ -719,10 +781,42 @@ function display_project_details($project) {
     printf("<tr><td>Type: &nbsp; </td>\n");
     printf("<td class='values' style='border: 1px solid $heading_color;'>$ptype<br></td></tr>\n");
 
-    // Assigned staff member -- default is whoever's logged in
+    // Assigned staff member
     printf("<tr><td>Assigned to: &nbsp; </td>");
     printf("<td class='values' style='border: 1px solid $heading_color;'>$displayed_user<br></td></tr>\n");
     
+    // Assisting staff
+    if (isset($assistants)) {
+
+        // Get staff list
+        $stafflist = array();
+        $conn = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD) 
+            or die ("Cannot connect to database. " . mysql_error() . "\n<br>");
+        mysql_select_db(DB_DATABASE);
+        $get_staff = mysql_query("select user_id, first_name, last_name from users " .
+            "order by last_name asc, first_name asc ");
+        while ($row = mysql_fetch_array($get_staff, MYSQL_ASSOC)) {
+            $stafflist[$row['user_id']] = $row['first_name'] . " " . $row['last_name'];
+        }
+        mysql_free_result($get_staff);
+        mysql_close($conn);
+
+        // Display assistants
+        $firstassistant = 1;
+        foreach ($assistants as $s) {
+            if ($firstassistant) {
+                printf("<tr><td>Assisting: &nbsp; </td>");
+                printf("<td class='values' style='border: 1px solid " .
+                    "$heading_color;'>$stafflist[$s]<br></td></tr>\n");
+                $firstassistant = 0;
+            } else {
+                printf("<tr><td><br></td>");
+                printf("<td class='values' style='border: 1px solid " .
+                    "$heading_color;'>$stafflist[$s]<br></td></tr>\n");
+            }
+        }
+    }
+
     // Client
     printf("<tr><td>Client: &nbsp; </td>");
     printf("<td class='values' style='border: 1px solid $heading_color;'>$client<br></td></tr>\n");
@@ -742,7 +836,7 @@ function display_project_details($project) {
     printf("</table>\n");
 
     //printf("</div><div id='project_right'>\n");
-    printf("</td><td width='50%%' valign='bottom'>\n");
+    printf("</td><td width='50%%' valign='top'>\n");
     //printf("</td><td valign='bottom'>\n");
     
     printf("<table>\n");
@@ -868,6 +962,7 @@ switch($cmd) {
                 $params['lastname'] = $lastname;
                 $params['email'] = $email;
                 $params['departmenttext'] = $departmenttext;
+                $params['assistants'] = $assistants;
                 display_project_form("add", 0, "$errormsg", $params);
             } else {
                 printf("<h3>Add New Project -- Not Authorized</h3>");
@@ -1019,6 +1114,15 @@ switch($cmd) {
                     "where project_id = \"$project\" ");
             }
                     
+            // If assistants were specified, add them to assistants table
+            if (isset($assistants)) {
+                foreach ($assistants as $s) {
+                    $add_assistant = mysql_query("insert into assistants " .
+                        "(project_id, duty_id, staff_id) values " .
+                        "(\"$project\", \"0\", \"$s\") ");
+                }
+            }
+
             // Add current values to project history
             $add_history = mysql_query("insert into project_history " .
                 "(project_id, status, " .
@@ -1083,6 +1187,7 @@ switch($cmd) {
                 $params['lastname'] = $lastname;
                 $params['email'] = $email;
                 $params['departmenttext'] = $departmenttext;
+                $params['assistants'] = $assistants;
                 display_project_form("edit", $project, $errormsg, $params);
             } else {
                 printf("<h3>Edit Project -- Not Authorized</h3>");
@@ -1201,6 +1306,19 @@ switch($cmd) {
                     "where project_id = \"$project\" ");
             }
                     
+            // If assistants were specified, add them to assistants table
+            if (isset($assistants)) {
+                // Delete previous assistants for this project to avoid duplication
+                $delete_assistant = mysql_query("delete from assistants " .
+                    "where duty_id = \"$duty\" ");
+                // Add new assistants
+                foreach ($assistants as $s) {
+                    $add_assistant = mysql_query("insert into assistants " .
+                        "(project_id, duty_id, staff_id) values " .
+                        "(\"$project\", \"0\", \"$s\") ");
+                }
+            }
+
             // Update project history if status changed
             if ($starting_status != $status) {
                 $edit_history = mysql_query("insert into project_history " .
@@ -1716,7 +1834,8 @@ switch($action) {
                     "p.icon_id from projects as p " .
                     "left join clients as c on p.client_id = c.client_id " .
                     "left join users as u on p.staff_assigned = u.user_id " .
-                    "where p.staff_assigned = $staff " . 
+                    "left join assistants as s on p.project_id = s.project_id " .
+                    "where (p.staff_assigned = \"$staff\" or s.staff_id = \"$staff\" ) " . 
                     $visclause . "order by p.date_entered desc ";
 
             } else if ($status == "Open") {
@@ -1726,8 +1845,9 @@ switch($action) {
                     "p.icon_id from projects as p " .
                     "left join clients as c on p.client_id = c.client_id " .
                     "left join users as u on p.staff_assigned = u.user_id " .
+                    "left join assistants as s on p.project_id = s.project_id " .
                     "where p.status in (\"Pending\", \"Active\", \"Suspended\") " . 
-                    "and p.staff_assigned = $staff " .
+                    "and (p.staff_assigned = \"$staff\" or s.staff_id = \"$staff\" ) " .
                     $visclause . "order by p.date_entered desc ";
 
             } else {
@@ -1737,7 +1857,9 @@ switch($action) {
                     "p.icon_id from projects as p " .
                     "left join clients as c on p.client_id = c.client_id " .
                     "left join users as u on p.staff_assigned = u.user_id " .
-                    "where p.status = \"$status\" and p.staff_assigned = $staff " . 
+                    "left join assistants as s on p.project_id = s.project_id " .
+                    "where p.status = \"$status\" and (p.staff_assigned = \"$staff\" " .
+                    "or s.staff_id = \"$staff\") " . 
                     $visclause . "order by p.date_entered desc ";
                     
             }
@@ -1810,7 +1932,19 @@ switch($action) {
 
                 // Staff (only if all users are being displayed)
                 if ($displayed_user == "All") {
-                    printf("<td align='center'>%s</td>\n", substr($row['first_name'], 0, 1) . substr($row['last_name'], 0, 1));
+                    printf("<td align='center'>%s", substr($row['first_name'], 0, 1) . substr($row['last_name'], 0, 1));
+
+                    // Display assistants, if any
+                    $get_assistants = mysql_query("select u.first_name, u.last_name " .
+                        "from users as u, assistants as s where u.user_id = s.staff_id " .
+                        "and s.project_id = \"" . $row['project_id'] . "\" ");
+                    while ($arow = mysql_fetch_array($get_assistants, MYSQL_ASSOC)) {
+                        printf(", %s", substr($arow['first_name'], 0, 1) . 
+                            substr($arow['last_name'], 0, 1));
+                    }
+                    mysql_free_result($get_assistants);
+                    printf("</td>\n");
+
                 }
 
                 // Status
