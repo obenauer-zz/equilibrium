@@ -29,7 +29,7 @@ CREATE TABLE `users` (
   `first_name` varchar(20) default NULL,
   `last_name` varchar(20) NOT NULL,
   `login` varchar(20) default NULL,
-  `email` varchar(50) NOT NULL,
+  `email` varchar(50) NULL,
   `authentication` enum('LDAP','local') NOT NULL default 'local',
   `password` varchar(255) default NULL,
   `department_id` int(10) unsigned default NULL,
@@ -38,7 +38,7 @@ CREATE TABLE `users` (
   PRIMARY KEY  (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-INSERT INTO users (user_id, first_name, last_name, login, email, authentication, password, staff_flag, admin_priv) values (1, '', 'Administrator', 'admin', '' 'local', password(""), 'N', 'Y');
+INSERT INTO users (user_id, first_name, last_name, login, email, authentication, password, staff_flag, admin_priv) values (1, '', 'Administrator', 'admin', '', 'local', password(""), 'N', 'Y');
 
 --
 -- Table structure for table `projects`

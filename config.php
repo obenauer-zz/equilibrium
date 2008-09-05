@@ -26,7 +26,7 @@ $admin_name = "Joe Sysadmin";
 $admin_email = "joe.sysadmin@company.com";
 
 // Configuration settings
-$main_page = "todolist.php";
+$main_page = "projects.php";
 $upload_dir = "datafiles";
 $number_icons = 35712;
 $client_organization_label = "Department";

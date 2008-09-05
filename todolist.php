@@ -170,7 +170,7 @@ switch($action) {
             printf("<div id='add_item_form' class='addbox'>\n");
             printf("<table cellpadding='0' cellspacing='0'><tr valign='bottom'><td>Add new item<br>\n");
             printf("<input type='text' id='txtNewItem' name='txtNewItem' " .
-                "size='80%%' maxlength='255' onkeydown='handleItemKey(event, \"$staff\", " .
+                "size='60%%' maxlength='255' onkeydown='handleItemKey(event, \"$staff\", " .
                 "\"$status\", \"$todostatus\", \"$priority\", \"$calmode\", " .
                 "\"0\", \"0\", \"1\", \"0\", \"$page\", \"$maxresults\");'></td>\n");
     

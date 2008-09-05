@@ -547,7 +547,7 @@ function build_todolist($staff, $status, $todostatus, $priority, $calmode,
                 "<center>Edit: <input type='text' " .
                 " id='txtEditItem_" . 
                 $row['todo_id'] . 
-                "' size='130' maxlength='255' value=\"" . $row['description'] ."\" " .
+                "' size='100' maxlength='255' value=\"" . $row['description'] ."\" " .
                 ">\n<br>";
                 
                 // Project/duty selection

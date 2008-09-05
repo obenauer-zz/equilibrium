@@ -50,11 +50,6 @@ if (!isset($activepage)) {
     $activepage = "";
 }
 
-if ($activepage == "ToDo") {
-    printf("<td bgcolor='$heading_color'><b><a href='todolist.php'>To Do</a></b></td>\n");
-} else {
-    printf("<td><b><a href='todolist.php'>ToDo</a></b></td>\n");
-}
 if ($activepage == "Projects") {
     printf("<td bgcolor='$heading_color'><b><a href='projects.php'>Projects</a></b></td>\n");
 } else {
@@ -65,26 +60,26 @@ if ($activepage == "Duties") {
 } else {
     printf("<td><b><a href='duties.php'>Duties</a></b></td>\n");
 }
+if ($activepage == "ToDo") {
+    printf("<td bgcolor='$heading_color'><b><a href='todolist.php'>To Do</a></b></td>\n");
+} else {
+    printf("<td><b><a href='todolist.php'>ToDo</a></b></td>\n");
+}
 if ($activepage == "Log") {
     printf("<td bgcolor='$heading_color'><b><a href='logbook.php'>Log</a></b></td>\n");
 } else {
     printf("<td><b><a href='logbook.php'>Log</a></b></td>\n");
 }
-//if ($activepage == "Calendar") {
-//    printf("<td bgcolor='$heading_color'><b><a href='calendar.php'>Calendar</a></b></td>\n");
-//} else {
-//    printf("<td><b><a href='calendar.php'>Calendar</a></b></td>\n");
-//}
-//if ($activepage == "Reports") {
-//    printf("<td bgcolor='$heading_color'><b><a href='reports.php'>Reports</a></b></td>\n");
-//} else {
-//    printf("<td><b><a href='reports.php'>Reports</a></b></td>\n");
-//}
 if ($activepage == "Files") {
     printf("<td bgcolor='$heading_color'><b><a href='files.php'>Files</a></b></td>\n");
 } else {
     printf("<td><b><a href='files.php'>Files</a></b></td>\n");
 }
+//if ($activepage == "Reports") {
+//    printf("<td bgcolor='$heading_color'><b><a href='reports.php'>Reports</a></b></td>\n");
+//} else {
+//    printf("<td><b><a href='reports.php'>Reports</a></b></td>\n");
+//}
 if ($activepage == "Users") {
     printf("<td bgcolor='$heading_color'><b><a href='users.php'>Users</a></b></td>\n");
 } else {

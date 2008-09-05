@@ -341,7 +341,8 @@ switch($cmd) {
         $conn = mysql_connect(DB_HOST, DB_USER, DB_PASSWORD) 
             or die ("Cannot connect to database. " . mysql_error() . "\n<br>");
         mysql_select_db(DB_DATABASE);
-        $newtext = trim(mysql_real_escape_string($content));
+        //$newtext = trim(mysql_real_escape_string($content));
+        $newtext = trim($content);
         if ($newtext) {
             if ($pdflag == "Project") {
                 
