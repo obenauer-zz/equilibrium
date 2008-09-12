@@ -1,0 +1,15 @@
+#!/usr/bin/perl
+
+@files = `find . -name "icon_*.png"`;
+
+#print "files[1] = $files[1]\n";
+
+for ($i = 0; $i <= $#files; $i++) {
+    
+    $file = substr($files[$i], 2);
+    chomp($file);
+    #$file = $files[$i];
+    #system("convert -resize 24x18 $file new_" . $file);
+    print "convert -resize 24x18 $file $file";
+
+}
